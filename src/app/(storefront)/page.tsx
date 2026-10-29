@@ -401,7 +401,7 @@ export default function HomePage() {
             <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-12">
               <div className="lg:col-span-6 space-y-4 sm:space-y-6 text-left">
                 <ScrollReveal>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-50/90 px-3.5 py-1.5 text-[11px] sm:text-xs font-bold text-emerald-900 shadow-xs">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/80 bg-gradient-to-r from-orange-50 via-amber-50 to-emerald-50 px-3.5 py-1.5 text-[11px] sm:text-xs font-bold text-stone-900 shadow-xs">
                     <Leaf className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                     <span>Farm-to-Mandir • Thane (400601–400608)</span>
                   </div>
@@ -423,24 +423,24 @@ export default function HomePage() {
                       Marigold (झेंडू), Chrysanthemum (शेवंती) & Red Hibiscus (लाल जास्वंद)
                     </strong>{" "}
                     a-la-carte, or subscribe from{" "}
-                    <strong className="text-emerald-800">₹49/day</strong> with silent{" "}
+                    <strong className="text-[#E8502B]">₹49/day</strong> with silent{" "}
                     <strong className="text-emerald-950">6:00 AM – 8:00 AM</strong> doorstep delivery.
                   </p>
                 </ScrollReveal>
 
-                {/* Light-Green Botanical Primary CTA + Soft Emerald Outline CTA */}
+                {/* Sacred Orange & Light-Green Mix Gradient Primary CTA + Secondary CTA */}
                 <ScrollReveal delayMs={190}>
                   <div className="grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-3 pt-1">
                     <Link
                       href="#fresh-flowers"
-                      className="inline-flex items-center justify-center gap-2.5 rounded-2xl sm:rounded-full bg-gradient-to-r from-emerald-600 to-teal-500 px-6 py-3.5 sm:py-4 text-xs sm:text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:brightness-105"
+                      className="inline-flex items-center justify-center gap-2.5 rounded-2xl sm:rounded-full bg-gradient-to-r from-[#E8502B] via-amber-500 to-emerald-600 px-6 py-3.5 sm:py-4 text-xs sm:text-sm font-bold text-white shadow-lg shadow-orange-500/25 transition hover:brightness-105"
                     >
                       <ShoppingBag className="h-4 w-4 text-amber-200" />
                       <span>Shop Fresh Flowers</span>
                     </Link>
                     <Link
                       href="#plans"
-                      className="inline-flex items-center justify-center gap-2 rounded-2xl sm:rounded-full border-2 border-emerald-700/30 bg-emerald-50/70 px-6 py-3.5 sm:py-4 text-xs sm:text-sm font-bold text-emerald-950 shadow-xs transition hover:bg-emerald-100/80"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl sm:rounded-full border-2 border-amber-400/60 bg-gradient-to-r from-orange-50/60 to-emerald-50/60 px-6 py-3.5 sm:py-4 text-xs sm:text-sm font-bold text-stone-900 shadow-xs transition hover:border-[#E8502B] hover:bg-white"
                     >
                       <span>Subscriptions From ₹49</span>
                       <ArrowRight className="h-4 w-4 text-emerald-700" />
@@ -481,7 +481,7 @@ export default function HomePage() {
                             Morning Window • 6:00 AM – 8:00 AM
                           </p>
                         </div>
-                        <span className="rounded-full bg-gradient-to-r from-emerald-600 to-teal-500 px-3 py-1 text-[11px] font-bold text-white shrink-0">
+                        <span className="rounded-full bg-gradient-to-r from-[#E8502B] via-amber-500 to-emerald-600 px-3 py-1 text-[11px] font-bold text-white shrink-0 shadow-sm">
                           ₹49 / day
                         </span>
                       </div>
@@ -499,7 +499,7 @@ export default function HomePage() {
         <PincodeBox />
       </FeatureBoundary>
 
-      {/* 3. A-LA-CARTE FRESH FLOWERS STORE (Light-Green Accents) */}
+      {/* 3. A-LA-CARTE FRESH FLOWERS STORE (Sacred Orange & Light-Green Accents) */}
       <FeatureBoundary featureName="DIRECT_FLOWER_STORE">
         <section
           id="fresh-flowers"
@@ -508,7 +508,7 @@ export default function HomePage() {
           <ScrollReveal>
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
               <div className="space-y-2 max-w-2xl">
-                <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100/80 border border-emerald-300 px-3.5 py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-900">
+                <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-100/90 via-amber-100/80 to-emerald-100/90 border border-amber-300 px-3.5 py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.18em] text-stone-900">
                   <ShoppingBag className="h-3.5 w-3.5 text-emerald-700" />
                   <span>A-La-Carte Fresh Blooms</span>
                 </div>
@@ -525,7 +525,7 @@ export default function HomePage() {
                 onClick={() =>
                   window.dispatchEvent(new Event("palassh-open-cart"))
                 }
-                className="inline-flex items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 px-5 py-3.5 text-xs font-bold text-white shadow-md shadow-emerald-600/20 hover:brightness-105 cursor-pointer shrink-0"
+                className="inline-flex items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#E8502B] via-amber-500 to-emerald-600 px-5 py-3.5 text-xs font-bold text-white shadow-md shadow-orange-500/25 hover:brightness-105 cursor-pointer shrink-0"
               >
                 <ShoppingBag className="h-4 w-4 text-amber-200" />
                 <span>
@@ -575,7 +575,7 @@ export default function HomePage() {
                           <span className="rounded-full bg-black/45 backdrop-blur-md px-2.5 py-1 text-[11px] font-semibold text-emerald-100">
                             100g • 250g • 500g
                           </span>
-                          <span className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-bold shadow-xs">
+                          <span className="rounded-lg bg-gradient-to-r from-[#E8502B] to-emerald-600 px-2.5 py-1 text-xs font-bold shadow-xs">
                             From ₹{startingWeight.price}
                           </span>
                         </div>
@@ -596,7 +596,7 @@ export default function HomePage() {
                     </div>
 
                     <div className="px-5 pb-5 sm:px-6 sm:pb-6 pt-1">
-                      <div className="flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50/70 py-3 text-xs font-bold text-emerald-900 group-hover:bg-gradient-to-r group-hover:from-emerald-600 group-hover:to-teal-500 group-hover:text-white transition">
+                      <div className="flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50/70 py-3 text-xs font-bold text-emerald-900 group-hover:bg-gradient-to-r group-hover:from-[#E8502B] group-hover:via-amber-500 group-hover:to-emerald-600 group-hover:text-white transition">
                         <Eye className="h-3.5 w-3.5" />
                         <span>Select Weight (100g / 250g / 500g)</span>
                       </div>
@@ -610,7 +610,7 @@ export default function HomePage() {
           <div className="mt-10 text-center">
             <Link
               href="/products"
-              className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-emerald-600 to-teal-500 px-7 py-3.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-emerald-600/20 transition hover:brightness-105"
+              className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-[#E8502B] via-amber-500 to-emerald-600 px-7 py-3.5 text-xs sm:text-sm font-bold text-white shadow-lg shadow-orange-500/25 transition hover:brightness-105"
             >
               <span>View All Registered Flowers (/products)</span>
               <ArrowRight className="h-4 w-4" />
@@ -632,7 +632,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl">
           <ScrollReveal>
             <div className="mx-auto max-w-2xl text-center space-y-2.5">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100/80 border border-emerald-300 px-3.5 py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-900">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-orange-50 via-amber-50 to-emerald-50 border border-amber-300 px-3.5 py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-stone-900">
                 <Sparkles className="h-3 w-3 text-emerald-700" /> Effortless Devotion
               </span>
               <h2 className="font-serif text-2xl sm:text-5xl font-bold text-stone-900">
@@ -665,7 +665,7 @@ export default function HomePage() {
               <ScrollReveal key={item.step} delayMs={i * 120}>
                 <div className="group relative overflow-hidden rounded-3xl sm:rounded-[2rem] border border-emerald-100 bg-white p-6 sm:p-8 shadow-md transition hover:-translate-y-1 hover:border-emerald-400 h-full">
                   <div className="flex items-center justify-between">
-                    <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-500 text-white shadow-sm">
+                    <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#E8502B] via-amber-500 to-emerald-600 text-white shadow-sm">
                       <item.icon className="h-5 w-5 sm:h-6 sm:w-6" />
                     </div>
                     <span className="font-serif text-3xl sm:text-4xl font-bold text-emerald-900/15">
@@ -690,7 +690,7 @@ export default function HomePage() {
         <div>
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
             <div className="space-y-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 border border-emerald-300 px-3.5 py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-900">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-orange-100 via-amber-100 to-emerald-100 border border-amber-300 px-3.5 py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.18em] text-stone-900">
                 <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" />
                 <span>Swipe Left / Right • Thane Pincodes 400601–400608</span>
               </span>
@@ -712,7 +712,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => scrollReviewsRow("right")}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white hover:brightness-105 cursor-pointer shadow-sm"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-[#E8502B] via-amber-500 to-emerald-600 text-white hover:brightness-105 cursor-pointer shadow-md shadow-orange-500/20"
                 aria-label="Scroll Reviews Right"
               >
                 <ChevronRight className="h-5 w-5" />
@@ -857,7 +857,7 @@ export default function HomePage() {
 
                 <button
                   type="submit"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 py-3.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-emerald-600/20 hover:brightness-105 cursor-pointer"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#E8502B] via-amber-500 to-emerald-600 py-3.5 text-xs sm:text-sm font-bold text-white shadow-lg shadow-orange-500/25 hover:brightness-105 cursor-pointer"
                 >
                   <Send className="h-4 w-4" />
                   <span>Publish Review</span>
@@ -1028,7 +1028,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => handleSelectWeightAndAddToCart(activeFlowerModal)}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 py-4 text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:brightness-105 cursor-pointer"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#E8502B] via-amber-500 to-emerald-600 py-4 text-sm font-bold text-white shadow-lg shadow-orange-500/25 transition hover:brightness-105 cursor-pointer"
               >
                 <ShoppingBag className="h-4 w-4" />
                 <span>

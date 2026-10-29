@@ -76,6 +76,8 @@ export function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-50 w-full shadow-lg shadow-emerald-950/10">
+        {/* Sacred Orange to Light-Green Mix Gradient Accent Line */}
+        <div className="h-1 w-full bg-gradient-to-r from-[#E8502B] via-amber-400 to-emerald-500" />
         {/* 1. SACRED DEVOTIONAL CROWN BAR ("॥ जय जय रघुवीर समर्थ ॥") */}
         <div className="bg-gradient-to-r from-[#071C15] via-[#0F3828] to-[#071C15] px-3 py-1.5 text-white border-b border-emerald-700/40">
           <div className="mx-auto flex max-w-7xl items-center justify-between text-[10px] sm:text-[11px]">
@@ -124,7 +126,7 @@ export function Navbar() {
                   <Link
                     key={item.label}
                     href={item.href}
-                    className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold whitespace-nowrap transition ${ isActive ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xs" : item.isPin ? "text-amber-300 hover:bg-emerald-900/80" : "text-emerald-100/90 hover:bg-emerald-900/70 hover:text-white" }`} > {item.isPin && <MapPin className="h-3.5 w-3.5 text-emerald-400" />} {item.href === "/products" && ( <Flower2 className="h-3.5 w-3.5 text-amber-300" /> )} <span>{item.label}</span> </Link> ); })} </nav>  {/* Right: Cart Button (Always Visible on Mobile & Desktop) + Account/Orders */} <div className="flex items-center gap-2 shrink-0"> <Link href="/account" className="hidden md:inline-flex items-center gap-1.5 rounded-full border border-emerald-700/70 bg-[#0B2B20] px-3.5 py-2 text-xs font-bold text-emerald-100 hover:border-emerald-400 hover:text-white whitespace-nowrap transition" > <User className="h-3.5 w-3.5 text-emerald-400" /> <span>My Account</span> </Link>  <Link href="/my-orders" className="hidden md:inline-flex items-center gap-1.5 rounded-full border border-emerald-700/70 bg-[#0B2B20] px-3.5 py-2 text-xs font-bold text-emerald-100 hover:border-emerald-400 hover:text-white whitespace-nowrap transition" > <Calendar className="h-3.5 w-3.5 text-amber-300" /> <span>My Orders</span> </Link>  {/* Dedicated Cart Button in Navbar (Light-Green Shade) */} <button type="button" onClick={() => setIsCartOpen(true)} className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-gradient-to-r from-emerald-600 to-teal-500 px-3.5 sm:px-4 py-2 sm:py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-950/30 transition hover:brightness-110 cursor-pointer whitespace-nowrap" > <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-200" /> <span>Cart</span> <span className="rounded-full bg-[#071C15]/80 px-2 py-0.5 text-[10px] font-bold text-amber-300"> {totalCartItems > 0 ? `${totalCartGrams}g` : "0"}
+                    className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold whitespace-nowrap transition ${ isActive ? "bg-gradient-to-r from-[#E8502B] via-amber-500 to-emerald-600 text-white shadow-md shadow-orange-500/20" : item.isPin ? "text-amber-300 hover:bg-emerald-900/80" : "text-emerald-100/90 hover:bg-emerald-900/70 hover:text-white" }`} > {item.isPin && <MapPin className="h-3.5 w-3.5 text-emerald-400" />} {item.href === "/products" && ( <Flower2 className="h-3.5 w-3.5 text-amber-300" /> )} <span>{item.label}</span> </Link> ); })} </nav>  {/* Right: Cart Button (Always Visible on Mobile & Desktop) + Account/Orders */} <div className="flex items-center gap-2 shrink-0"> <Link href="/account" className="hidden md:inline-flex items-center gap-1.5 rounded-full border border-emerald-700/70 bg-[#0B2B20] px-3.5 py-2 text-xs font-bold text-emerald-100 hover:border-emerald-400 hover:text-white whitespace-nowrap transition" > <User className="h-3.5 w-3.5 text-emerald-400" /> <span>My Account</span> </Link>  <Link href="/my-orders" className="hidden md:inline-flex items-center gap-1.5 rounded-full border border-emerald-700/70 bg-[#0B2B20] px-3.5 py-2 text-xs font-bold text-emerald-100 hover:border-emerald-400 hover:text-white whitespace-nowrap transition" > <Calendar className="h-3.5 w-3.5 text-amber-300" /> <span>My Orders</span> </Link>  {/* Dedicated Cart Button in Navbar (Light-Green Shade) */} <button type="button" onClick={() => setIsCartOpen(true)} className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-gradient-to-r from-[#E8502B] via-amber-500 to-emerald-600 px-3.5 sm:px-4 py-2 sm:py-2.5 text-xs font-bold text-white shadow-md shadow-orange-500/25 transition hover:brightness-110 cursor-pointer whitespace-nowrap" > <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-200" /> <span>Cart</span> <span className="rounded-full bg-[#071C15]/80 px-2 py-0.5 text-[10px] font-bold text-amber-300"> {totalCartItems > 0 ? `${totalCartGrams}g` : "0"}
                 </span>
               </button>
 
@@ -155,7 +157,7 @@ export function Navbar() {
                 <Link
                   href="/my-orders"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 py-2.5 text-xs font-bold text-white"
+                  className="flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-[#E8502B] via-amber-500 to-emerald-600 py-2.5 text-xs font-bold text-white shadow-md shadow-orange-500/20"
                 >
                   <Calendar className="h-3.5 w-3.5 text-amber-200" />
                   <span>My Orders</span>
@@ -245,7 +247,7 @@ export function Navbar() {
                     <Link
                       href="/products"
                       onClick={() => setIsCartOpen(false)}
-                      className="inline-block rounded-full bg-gradient-to-r from-emerald-600 to-teal-500 px-6 py-2.5 text-xs font-bold text-white shadow-sm"
+                      className="inline-block rounded-full bg-gradient-to-r from-[#E8502B] via-amber-500 to-emerald-600 px-6 py-2.5 text-xs font-bold text-white shadow-md shadow-orange-500/20 hover:brightness-105"
                     >
                       Browse Fresh Flowers
                     </Link>

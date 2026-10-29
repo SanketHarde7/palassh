@@ -11,6 +11,7 @@
   --primary: #E8502B;          /* PALASSH Vermilion Orange */
   --primary-dark: #B83718;     /* Deep Terracotta */
   --gold-accent: #D97706;      /* Temple Brass Gold */
+  --sacred-green: #10B981;     /* Fresh Sacred Tulsi Green */
   --text-main: #1C1613;        /* Deep Espresso Charcoal */
 }
 
@@ -24,6 +25,15 @@ body {
 .bg-sacred-pattern {
   background-image: radial-gradient(#e8502b18 1px, transparent 1px);
   background-size: 24px 24px;
+}
+
+/* Sacred Marigold Orange & Tulsi Light-Green Mix Gradients */
+.bg-gradient-sacred {
+  background: linear-gradient(135deg, #E8502B 0%, #F59E0B 50%, #10B981 100%);
+}
+
+.bg-gradient-sacred-horizontal {
+  background: linear-gradient(90deg, #E8502B 0%, #F59E0B 45%, #10B981 100%);
 }
 
 /* Custom smooth horizontal scrollbar */

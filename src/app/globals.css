@@ -25,3 +25,22 @@ body {
   background-image: radial-gradient(#e8502b18 1px, transparent 1px);
   background-size: 24px 24px;
 }
+
+/* Custom smooth horizontal scrollbar */
+.horizontal-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(217, 119, 6, 0.45) transparent;
+}
+.horizontal-scrollbar::-webkit-scrollbar {
+  height: 6px;
+}
+.horizontal-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.horizontal-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(217, 119, 6, 0.35);
+  border-radius: 9999px;
+}
+.horizontal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(217, 119, 6, 0.7);
+}

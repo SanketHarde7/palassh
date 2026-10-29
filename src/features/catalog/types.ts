@@ -2,6 +2,7 @@ export interface FlowerProduct {
   id: string;
   slug: string;
   name: string;
+  marathiName: string;
   subtitle: string;
   botanicalNote: string;
   imageUrl: string;
@@ -36,23 +37,30 @@ export interface SubscriptionPlan {
   flowersIncluded: string[];
   shortHighlights: string[];
   features: string[];
+  festiveMaxGramsLimit: number;
 }
 
 export interface CartItem {
   id: string;
   flowerId: string;
   flowerName: string;
+  marathiName?: string;
   imageUrl: string;
   weightLabel: string;
+  grams: number;
   unitPrice: number;
-  quantity: number;
+  quantity: 1; // Strictly locked to 1 (No quantity loophole)
 }
 
+export type CustomerTier = "NORMAL" | "ONE_DAY" | "WEEKLY" | "MONTHLY";
+
+// Weight labels strictly show grams only as requested (Point #9)
 export const INITIAL_FLOWERS: FlowerProduct[] = [
   {
     id: "flw-marigold",
     slug: "marigold",
     name: "Marigold",
+    marathiName: "झेंडू",
     subtitle: "Fresh Saffron & Golden Puja Blooms",
     botanicalNote:
       "Plucked at 1:30 AM from Nashik farms. Zero cold storage, vibrant petals with rich natural fragrance for daily archana and toran.",
@@ -60,9 +68,10 @@ export const INITIAL_FLOWERS: FlowerProduct[] = [
     basePricePer100g: 35,
     unitType: "WEIGHT",
     availableWeights: [
-      { label: "100g Morning Pouch", grams: 100, price: 35 },
-      { label: "250g Family Puja Pack", grams: 250, price: 80 },
-      { label: "500g Garland & Toran Pack", grams: 500, price: 150 },
+      { label: "100g", grams: 100, price: 35 },
+      { label: "250g", grams: 250, price: 80 },
+      { label: "500g", grams: 500, price: 150 },
+      { label: "1000g", grams: 1000, price: 290 },
     ],
     inStock: true,
     deityAffinity: "All Daily Puja & Toran Rituals",
@@ -71,6 +80,7 @@ export const INITIAL_FLOWERS: FlowerProduct[] = [
     id: "flw-chrysanthemum",
     slug: "chrysanthemum",
     name: "Chrysanthemum",
+    marathiName: "शेवंती",
     subtitle: "Ivory & Golden Temple Blooms",
     botanicalNote:
       "Long-lasting premium blooms that stay dew-fresh in your home mandir from early morning aarti until late evening.",
@@ -78,9 +88,10 @@ export const INITIAL_FLOWERS: FlowerProduct[] = [
     basePricePer100g: 45,
     unitType: "WEIGHT",
     availableWeights: [
-      { label: "100g Morning Pouch", grams: 100, price: 45 },
-      { label: "250g Family Puja Pack", grams: 250, price: 105 },
-      { label: "500g Temple Assortment", grams: 500, price: 195 },
+      { label: "100g", grams: 100, price: 45 },
+      { label: "250g", grams: 250, price: 105 },
+      { label: "500g", grams: 500, price: 195 },
+      { label: "1000g", grams: 1000, price: 380 },
     ],
     inStock: true,
     deityAffinity: "Goddess Lakshmi & Lord Vishnu Puja",
@@ -89,6 +100,7 @@ export const INITIAL_FLOWERS: FlowerProduct[] = [
     id: "flw-hibiscus",
     slug: "red-hibiscus",
     name: "Red Hibiscus",
+    marathiName: "लाल जास्वंद",
     subtitle: "Sacred Crimson Buds for Ganpati & Devi",
     botanicalNote:
       "Hand-picked Dahanu crimson buds packed in breathable eco-pouches so every bloom opens fresh during your morning prayers.",
@@ -96,9 +108,10 @@ export const INITIAL_FLOWERS: FlowerProduct[] = [
     basePricePer100g: 50,
     unitType: "COUNT_AND_WEIGHT",
     availableWeights: [
-      { label: "5 Buds + Fresh Tulsi (~100g)", grams: 100, price: 50 },
-      { label: "11 Buds Sankashti Pack (~200g)", grams: 200, price: 95 },
-      { label: "21 Buds Abhishekam Pack (~350g)", grams: 350, price: 175 },
+      { label: "100g", grams: 100, price: 50 },
+      { label: "250g", grams: 250, price: 115 },
+      { label: "500g", grams: 500, price: 210 },
+      { label: "1000g", grams: 1000, price: 400 },
     ],
     inStock: true,
     isSacredSpecial: true,
@@ -109,20 +122,25 @@ export const INITIAL_FLOWERS: FlowerProduct[] = [
 export const INITIAL_PLANS: SubscriptionPlan[] = [
   {
     id: "plan-daily",
-    slug: "daily-puja-pack",
-    title: "Daily Puja Pack",
-    subtitle: "Flexible single-day or daily morning ritual with fresh farm blooms.",
-    price: 76,
-    perDayEffectivePrice: 76,
+    slug: "one-day-puja-pack",
+    title: "One Day Puja Pack",
+    subtitle: "Single-day morning trial ritual with farm-fresh sacred blooms.",
+    price: 49,
+    perDayEffectivePrice: 49,
     billingCycle: "day",
     deliveriesCount: 1,
     pouchWeight: "100g – 120g",
     mixedPredefinedBreakdown:
-      "40g Marigold + 40g Chrysanthemum + 2 Red Hibiscus + Sacred Tulsi",
-    badge: "Flexible Trial",
+      "40g Marigold (झेंडू) + 40g Chrysanthemum (शेवंती) + 2 Red Hibiscus (लाल जास्वंद) + Sacred Tulsi",
+    badge: "One Day Trial",
     isPopular: false,
     imageUrl: "/images/plan-daily.jpg",
-    flowersIncluded: ["Marigold", "Chrysanthemum", "Red Hibiscus", "Fresh Tulsi"],
+    flowersIncluded: [
+      "Marigold (झेंडू)",
+      "Chrysanthemum (शेवंती)",
+      "Red Hibiscus (जास्वंद)",
+      "Fresh Tulsi",
+    ],
     shortHighlights: [
       "100g – 120g Dew-Fresh Morning Pouch",
       "5:00 AM – 8:00 AM Silent Doorstep Drop",
@@ -133,75 +151,80 @@ export const INITIAL_PLANS: SubscriptionPlan[] = [
       "Zero Cold-Storage • Plucked at 1:30 AM from Farms",
       "Includes complimentary sacred Tulsi leaves",
     ],
+    festiveMaxGramsLimit: 0,
   },
   {
     id: "plan-weekly",
     slug: "weekly-devotion-pack",
     title: "Weekly Devotion Pack",
     subtitle: "7 sacred mornings with day-by-day flower & pause control.",
-    price: 510,
-    perDayEffectivePrice: 72,
+    price: 329,
+    perDayEffectivePrice: 47,
     billingCycle: "week",
     deliveriesCount: 7,
     pouchWeight: "125g + Garland",
     mixedPredefinedBreakdown:
-      "50g Marigold + 50g Chrysanthemum + 3 Red Hibiscus + Sacred Garland",
-    badge: "Includes Garland",
+      "50g Marigold (झेंडू) + 50g Chrysanthemum (शेवंती) + 3 Red Hibiscus (लाल जास्वंद) + Sacred Garland",
+    badge: "Festive 2 KG Access",
     isPopular: false,
     imageUrl: "/images/plan-weekly.jpg",
     flowersIncluded: [
-      "Marigold",
-      "Chrysanthemum",
-      "Red Hibiscus",
+      "Marigold (झेंडू)",
+      "Chrysanthemum (शेवंती)",
+      "Red Hibiscus (जास्वंद)",
       "Hand-Strung Garland",
     ],
     shortHighlights: [
-      "7 Morning Deliveries (125g + Weekly Garland)",
-      "Day-Wise Flower & Pause Control before 8 PM",
+      "7 Morning Deliveries (₹47/morning effective)",
+      "Unlock up to 2 KG Flower Booking on Festive Days",
     ],
     features: [
       "Switch between Mixed or Separate Flowers any day via Checkboxes",
+      "Exclusive Festive Access: Buy up to 2 KG combined flowers on festivals",
       "Modify next day's flower or Pause before 8:00 PM",
-      "Complimentary hand-strung garland included",
       "Paused days automatically carry forward",
     ],
+    festiveMaxGramsLimit: 2000,
   },
   {
     id: "plan-monthly",
     slug: "monthly-sacred-assortment",
     title: "Monthly Sacred Assortment",
-    subtitle: "Complete 30-day peace of mind with festival special offerings.",
-    price: 2100,
-    perDayEffectivePrice: 70,
+    subtitle: "Complete 30-day peace of mind with priority festive flower quota.",
+    price: 1350,
+    perDayEffectivePrice: 45,
     billingCycle: "month",
     deliveriesCount: 30,
     pouchWeight: "150g + Festival Lotus",
     mixedPredefinedBreakdown:
-      "60g Marigold + 50g Chrysanthemum + 4 Red Hibiscus + Belpatra & Tulsi",
-    badge: "Most Popular",
+      "60g Marigold (झेंडू) + 50g Chrysanthemum (शेवंती) + 4 Red Hibiscus (लाल जास्वंद) + Belpatra & Tulsi",
+    badge: "Most Loved • 3 KG Festive Quota",
     isPopular: true,
     imageUrl: "/images/plan-monthly.jpg",
     flowersIncluded: [
-      "Marigold",
-      "Chrysanthemum",
-      "Red Hibiscus",
+      "Marigold (झेंडू)",
+      "Chrysanthemum (शेवंती)",
+      "Red Hibiscus (जास्वंद)",
       "Festival Lotus & Belpatra",
     ],
     shortHighlights: [
-      "30 Morning Deliveries (150g + Festival Specials)",
-      "Full 30-Day Checkbox Planner & Unlimited Pauses",
+      "30 Morning Deliveries (Only ₹45/morning)",
+      "Priority 3 KG Flower Quota on Festive Days & Unlimited Pauses",
     ],
     features: [
       "Full 30-Day Interactive Checkbox Schedule in My-Orders",
-      "Tick specific flowers per day (e.g. Tuesday = Only Red Hibiscus)",
+      "Priority Festive Quota: Buy up to 3 KG combined flowers on festivals",
       "Unlimited 1-Click Pause before 8 PM (Days carry forward)",
       "Complimentary Lotus & Belpatra on Ekadashi & Sankashti",
     ],
+    festiveMaxGramsLimit: 3000,
   },
 ];
 
-export const CATALOG_STORAGE_KEY = "palassh_flowers_catalog_v2";
-export const CART_STORAGE_KEY = "palassh_flower_cart_v1";
+export const CATALOG_STORAGE_KEY = "palassh_flowers_catalog_v4";
+export const CART_STORAGE_KEY = "palassh_flower_cart_v3";
+export const FESTIVE_MODE_STORAGE_KEY = "palassh_festive_mode_v2";
+export const FESTIVE_DATES_STORAGE_KEY = "palassh_festive_dates_v1";
 
 export function getActiveFlowersCatalog(): FlowerProduct[] {
   if (typeof window === "undefined") return INITIAL_FLOWERS;
@@ -239,4 +262,158 @@ export function saveStoredCart(items: CartItem[]): void {
   } catch {
     // Ignore storage error
   }
+}
+
+// Returns array of YYYY-MM-DD strings marked as Festive Days by Admin Calendar
+export function getFestiveDatesList(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const saved = localStorage.getItem(FESTIVE_DATES_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch {
+    // Ignore error
+  }
+  return [];
+}
+
+export function saveFestiveDatesList(dates: string[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(FESTIVE_DATES_STORAGE_KEY, JSON.stringify(dates));
+    window.dispatchEvent(new Event("palassh-festive-updated"));
+  } catch {
+    // Ignore error
+  }
+}
+
+export function getTomorrowDateString(): string {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+export function getFestiveModeStatus(targetDateStr?: string): {
+  isFestiveDay: boolean;
+  festivalName: string;
+  matchedDate?: string;
+} {
+  if (typeof window === "undefined") {
+    return { isFestiveDay: false, festivalName: "Festive Puja" };
+  }
+  try {
+    const checkDate = targetDateStr || getTomorrowDateString();
+    const todayStr = new Date().toISOString().split("T")[0];
+    const calDates = getFestiveDatesList();
+
+    // Check if today or tomorrow's delivery date is marked in Admin Festive Calendar
+    if (calDates.includes(checkDate) || calDates.includes(todayStr)) {
+      return {
+        isFestiveDay: true,
+        festivalName: `Festive Calendar Date (${
+          calDates.includes(checkDate) ? checkDate : todayStr
+        })`,
+        matchedDate: checkDate,
+      };
+    }
+
+    const saved = localStorage.getItem(FESTIVE_MODE_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.isFestiveDay) return parsed;
+    }
+  } catch {
+    // Ignore error
+  }
+  return { isFestiveDay: false, festivalName: "Festive Puja" };
+}
+
+export function getCurrentCustomerTier(): CustomerTier {
+  if (typeof window === "undefined") return "NORMAL";
+  try {
+    const savedSub = localStorage.getItem("palassh_active_subscription");
+    if (savedSub) {
+      const parsed = JSON.parse(savedSub);
+      if (parsed.status === "ACTIVE") {
+        if (
+          parsed.planId === "plan-monthly" ||
+          parsed.billingCycle === "month" ||
+          String(parsed.planTitle).toLowerCase().includes("month")
+        ) {
+          return "MONTHLY";
+        }
+        if (
+          parsed.planId === "plan-weekly" ||
+          parsed.billingCycle === "week" ||
+          String(parsed.planTitle).toLowerCase().includes("week")
+        ) {
+          return "WEEKLY";
+        }
+        return "ONE_DAY";
+      }
+    }
+  } catch {
+    // Ignore storage error
+  }
+  return "NORMAL";
+}
+
+/**
+ * Enforces Point #2, #7, and #9:
+ * - Normal Days: Normal/One-Day user max 500g combined. Weekly = 2000g, Monthly = 3000g.
+ * - Festive Days (from Calendar or Toggle): Normal/One-Day users CANNOT buy direct flowers.
+ *   Weekly = max 2000g (2 KG) combined. Monthly = max 3000g (3 KG) combined.
+ */
+export function validateDirectFlowerPurchaseLimit(
+  currentCartGramsExcludingThisFlower: number,
+  selectedPackGrams: number,
+  tier: CustomerTier,
+  isFestiveDay: boolean
+): { allowed: boolean; maxGrams: number; reason?: string } {
+  const projectedTotal =
+    currentCartGramsExcludingThisFlower + selectedPackGrams;
+
+  if (isFestiveDay) {
+    if (tier === "NORMAL" || tier === "ONE_DAY") {
+      return {
+        allowed: false,
+        maxGrams: 0,
+        reason:
+          "Festive Day Restriction: Direct flower purchases on Festive Days are exclusively reserved for our Weekly (up to 2 KG) & Monthly (up to 3 KG) subscribers.",
+      };
+    }
+    const maxFestive = tier === "MONTHLY" ? 3000 : 2000;
+    if (projectedTotal > maxFestive) {
+      return {
+        allowed: false,
+        maxGrams: maxFestive,
+        reason: `Festive Quota Exceeded: Your ${tier} plan allows up to ${
+          maxFestive / 1000
+        } KG (${maxFestive}g) combined across all flowers. Other flowers in cart: ${currentCartGramsExcludingThisFlower}g.`,
+      };
+    }
+    return { allowed: true, maxGrams: maxFestive };
+  }
+
+  // Normal Day Rules
+  const maxNormal =
+    tier === "MONTHLY" ? 3000 : tier === "WEEKLY" ? 2000 : 500;
+
+  if (projectedTotal > maxNormal) {
+    return {
+      allowed: false,
+      maxGrams: maxNormal,
+      reason:
+        maxNormal === 500
+          ? `Direct orders have a strict maximum limit of 500g combined (Other flowers in cart: ${currentCartGramsExcludingThisFlower}g). Subscribe to Weekly (₹329) or Monthly (₹1,350) for 2 KG – 3 KG limits!`
+          : `Your ${tier} plan allows up to ${maxNormal}g combined per order.`,
+    };
+  }
+
+  return { allowed: true, maxGrams: maxNormal };
 }

@@ -1,32 +1,34 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   Sparkles,
+  Clock,
   CalendarCheck,
   PauseCircle,
   Star,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   ArrowRight,
   Leaf,
   ShieldCheck,
   PhoneCall,
   ShoppingBag,
-  Plus,
-  Minus,
   CheckCircle2,
   SlidersHorizontal,
   MapPin,
-  Navigation,
   X,
-  Trash2,
-  MessageSquarePlus,
   Eye,
+  AlertCircle,
+  Send,
+  Flame,
 } from "lucide-react";
 import { FeatureBoundary } from "@/components/shared/FeatureBoundary";
 import { PincodeBox } from "@/features/pincode-checker/components/PincodeBox";
 import { PlanCards } from "@/features/catalog/components/PlanCards";
+import { ScrollReveal } from "@/components/shared/ScrollReveal";
 import {
   FlowerProduct,
   INITIAL_FLOWERS,
@@ -34,28 +36,49 @@ import {
   getActiveFlowersCatalog,
   getStoredCart,
   saveStoredCart,
+  getCurrentCustomerTier,
+  getFestiveModeStatus,
+  validateDirectFlowerPurchaseLimit,
 } from "@/features/catalog/types";
+
+const SHOP_ADDRESS =
+  "6X4X+HJ5 Glenmark Residency, 60 Feet Rd, Kharegaon, Kalwa, Thane, Maharashtra 400605";
 
 const FAQS = [
   {
-    tag: "One-Time & Subscriptions",
-    q: "Can I order individual flowers like Marigold or Red Hibiscus without a subscription?",
-    a: "Yes! Click on any flower card in our 'Fresh Puja Flowers' section to pick your weight pack (100g, 250g, 500g), add multiple blooms to your cart, or buy directly for tomorrow morning's 5:00 AM – 8:00 AM delivery.",
+    tag: "Morning Delivery Slot",
+    q: "What is your exact morning flower delivery timing across Thane?",
+    a: "All PALASSH deliveries arrive in a single guaranteed morning window between 6:00 AM – 8:00 AM across Thane pincodes 400601 to 400608, right in time for your morning home mandir aarti.",
+  },
+  {
+    tag: "Direct Buying & Weight Limits",
+    q: "How much flower weight can I order directly without a subscription?",
+    a: "On normal days, direct a-la-carte customers can order up to a combined maximum of 500g across all flowers. Simply select your preferred gram pack (100g, 250g, or 500g) from the weight selector.",
+  },
+  {
+    tag: "Festive Day Rules & Quotas",
+    q: "Why is direct flower buying locked for normal users on Festive Days?",
+    a: "During high-demand festivals (Ganeshotsav, Diwali, Dasara, Sankashti, Gudi Padwa), our farm harvest is prioritized for our active subscribers. Weekly subscribers can book up to 2 KG (2,000g) combined, and Monthly subscribers can book up to 3 KG (3,000g) combined.",
   },
   {
     tag: "Checkbox Flower Customization",
-    q: "Can I tick which flowers I want on specific days of the week?",
-    a: "Absolutely. Both while subscribing and inside your My-Orders Day-Wise Schedule, you get simple checkboxes to tick 'Predefined Mixed Pack' or tick individual flowers (Marigold, Chrysanthemum, Red Hibiscus) for each day before 8:00 PM.",
+    q: "Can I choose between Mixed Flowers or specific flowers like only Red Hibiscus?",
+    a: "Yes! Both when subscribing and inside your My-Orders Day-Wise Planner, you can tick the 'Predefined Mixed Sacred Box' checkbox or tick individual flowers—Marigold (झेंडू), Chrysanthemum (शेवंती), or Red Hibiscus (लाल जास्वंद)—for specific days.",
   },
   {
-    tag: "Silent Delivery",
-    q: "How do you deliver between 5:00 AM – 8:00 AM without waking us up?",
-    a: "Our riders follow a strict Silent Drop Protocol. We never ring your doorbell or call in the morning. Your breathable eco-pouch is gently hung on your door handle or placed inside your doorstep basket.",
+    tag: "Silent Doorbell-Free Drop",
+    q: "How do riders deliver between 6:00 AM – 8:00 AM without disturbing our sleep?",
+    a: "We follow a strict Silent Devotion Protocol. Our riders never ring your doorbell or call you in the morning. Your breathable eco-pouch is gently hung on your main door handle or placed inside your doorstep basket.",
   },
   {
-    tag: "Farm Freshness",
-    q: "How are PALASSH flowers different from local market vendors?",
-    a: "Roadside flowers are kept in ice boxes for 3–4 days. PALASSH blooms are plucked at 1:30 AM in Nashik & Dahanu farms and reach your home temple by 6:30 AM—zero cold storage, 100% natural fragrance.",
+    tag: "1-Click Pause Before 8 PM",
+    q: "What happens if my family is traveling out of Thane for a few days?",
+    a: "You never lose a single rupee. Simply open the My-Orders page before 8:00 PM any evening and pause the dates you are away. Every paused delivery automatically carries forward to extend your subscription.",
+  },
+  {
+    tag: "Zero Cold Storage Promise",
+    q: "How are PALASSH blooms fresher than local station market flowers?",
+    a: "Market flowers are typically 3 to 4 days old and stored in ice boxes, causing them to wilt by noon. PALASSH flowers are harvested at 1:30 AM in Nashik and Dahanu farms, sorted at our Kalwa hub at 4:00 AM, and delivered fresh to your door between 6:00 AM – 8:00 AM.",
   },
 ];
 
@@ -65,67 +88,143 @@ interface CustomerReview {
   society: string;
   rating: number;
   quote: string;
+  tag?: string;
 }
 
 const INITIAL_REVIEWS: CustomerReview[] = [
   {
     id: "rev-1",
     name: "Mrs. Anjali Joshi",
-    society: "Hiranandani Estate, Thane West",
+    society: "Hiranandani Estate, Ghodbunder Rd (400607)",
     rating: 5,
+    tag: "Monthly Subscriber",
     quote:
-      "On Tuesdays I tick the 'Red Hibiscus' checkbox for Ganpati Bappa, and other days I tick 'Mixed Box'. Having this control on the website is a blessing!",
+      "On Tuesdays I tick the 'Red Hibiscus' (लाल जास्वंद) checkbox for Ganpati Bappa, and other days I keep the Mixed Box. Having this control on the website is a true blessing!",
   },
   {
     id: "rev-2",
     name: "Siddharth & Pooja Nair",
-    society: "Rustomjee Urbania, Majiwada",
+    society: "Rustomjee Urbania, Thane West (400601)",
     rating: 5,
+    tag: "Weekly Subscriber",
     quote:
-      "When we went to Lonavala for 3 days, we paused those exact 3 dates from our schedule list at 7 PM and didn't lose a single delivery.",
+      "When we went to Lonavala for 3 days, we paused those exact 3 dates from our My-Orders schedule at 7 PM and didn't lose a single morning pouch.",
   },
   {
     id: "rev-3",
     name: "Kulkarni Family",
-    society: "Neelam Nagar, Mulund East",
+    society: "Vartak Nagar, Pokhran Rd No. 1 (400606)",
     rating: 5,
+    tag: "Monthly Subscriber",
     quote:
-      "We ordered 500g Marigold and 250g Chrysanthemum one-time packs for our housewarming puja. Plucked fresh from Nashik farms, zero cold storage!",
+      "During Sankashti, non-subscribers couldn't find fresh flowers anywhere, but our Monthly plan gave us a 3 KG festive quota at farm prices. Zero cold storage!",
+  },
+  {
+    id: "rev-4",
+    name: "Dr. Mahesh Deshpande",
+    society: "Panchpakhadi, Naupada (400602)",
+    rating: 5,
+    tag: "Monthly Subscriber",
+    quote:
+      "By 6:30 AM every single day, the breathable pouch is silently hung on our door handle. The Marigold (झेंडू) and Tulsi leaves look like they were just plucked from a garden.",
+  },
+  {
+    id: "rev-5",
+    name: "Sneha & Rohan Sawant",
+    society: "Piramal Vaikunth, Balkum (400608)",
+    rating: 5,
+    tag: "One Day Trial -> Monthly",
+    quote:
+      "We first tried the ₹49 One Day Puja Pack just to test the quality. Within 2 days we upgraded to the ₹1,350 Monthly Sacred Assortment. Unbeatable freshness!",
+  },
+  {
+    id: "rev-6",
+    name: "Mrs. Vandana Patwardhan",
+    society: "Kopri Colony, Thane East (400603)",
+    rating: 5,
+    tag: "Weekly Subscriber",
+    quote:
+      "The Chrysanthemum (शेवंती) blooms stay fresh on our home mandir from 7 AM aarti until night. Even my mother-in-law is amazed by the temple-grade quality.",
+  },
+  {
+    id: "rev-7",
+    name: "Abhijit Gokhale",
+    society: "Raymond Ten X Habitat, Pokhran Rd (400606)",
+    rating: 5,
+    tag: "Direct & Weekly",
+    quote:
+      "No more rushing to the station flower market before office! The 6:00 AM – 8:00 AM window is super punctual and the eco-pouch keeps the buds dewy.",
+  },
+  {
+    id: "rev-8",
+    name: "Meenal & Pradeep Shinde",
+    society: "Glenmark Residency, Kharegaon, Kalwa (400605)",
+    rating: 5,
+    tag: "Monthly Subscriber",
+    quote:
+      "Knowing that our flowers come straight from Nashik farms to the Kalwa hub every midnight gives us complete confidence in their purity for daily puja.",
+  },
+  {
+    id: "rev-9",
+    name: "Mrs. Sunita Ghanekar",
+    society: "Dosti Vihar, Vartak Nagar (400606)",
+    rating: 5,
+    tag: "Weekly Subscriber",
+    quote:
+      "The ₹329 Weekly pack with a fresh hand-strung garland and 2 KG festive booking access is the most thoughtful service in Thane.",
   },
 ];
-
-const SHOP_ADDRESS =
-  "6X4X+HJ5 Glenmark residency, 60 Feet Rd, Kharegaon, Kalwa, Thane, Maharashtra 400605";
 
 export default function HomePage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [flowers, setFlowers] = useState<FlowerProduct[]>(INITIAL_FLOWERS);
+  const reviewsScrollRef = useRef<HTMLDivElement | null>(null);
 
-  // Flower Detail Modal State (Opens only when clicking a flower card)
+  // Flower Detail Modal State
   const [activeFlowerModal, setActiveFlowerModal] =
     useState<FlowerProduct | null>(null);
   const [modalWeightIdx, setModalWeightIdx] = useState<number>(0);
-  const [modalQty, setModalQty] = useState<number>(1);
 
-  // Cart & Slide-Over Drawer State
+  // Cart & Popup Toast State
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
-  const [cartToast, setCartToast] = useState<string>("");
+  const [popupToast, setPopupToast] = useState<{
+    visible: boolean;
+    title: string;
+    subtitle: string;
+  }>({ visible: false, title: "", subtitle: "" });
+  const [cartError, setCartError] = useState<string>("");
 
   // Customer Reviews State
   const [reviews, setReviews] = useState<CustomerReview[]>(INITIAL_REVIEWS);
-  const [showReviewForm, setShowReviewForm] = useState<boolean>(false);
   const [reviewerName, setReviewerName] = useState<string>("");
   const [reviewerSociety, setReviewerSociety] = useState<string>("");
   const [reviewerRating, setReviewerRating] = useState<number>(5);
   const [reviewerQuote, setReviewerQuote] = useState<string>("");
+  const [reviewSubmittedMsg, setReviewSubmittedMsg] = useState<string>("");
+
+  // Tier & Festive State
+  const [customerTier, setCustomerTier] = useState<
+    "NORMAL" | "ONE_DAY" | "WEEKLY" | "MONTHLY"
+  >("NORMAL");
+  const [festiveStatus, setFestiveStatus] = useState({
+    isFestiveDay: false,
+    festivalName: "Festive Puja",
+  });
 
   useEffect(() => {
-    setFlowers(getActiveFlowersCatalog());
-    setCart(getStoredCart());
+    const syncState = () => {
+      setFlowers(getActiveFlowersCatalog());
+      setCart(getStoredCart());
+      setCustomerTier(getCurrentCustomerTier());
+      setFestiveStatus(getFestiveModeStatus());
+    };
+    syncState();
+
+    window.addEventListener("palassh-cart-updated", syncState);
+    window.addEventListener("palassh-festive-updated", syncState);
 
     try {
-      const savedRevs = localStorage.getItem("palassh_customer_reviews_v1");
+      const savedRevs = localStorage.getItem("palassh_customer_reviews_v2");
       if (savedRevs) {
         const parsed = JSON.parse(savedRevs);
         if (Array.isArray(parsed) && parsed.length > 0) setReviews(parsed);
@@ -133,331 +232,387 @@ export default function HomePage() {
     } catch {
       // Ignore error
     }
+
+    return () => {
+      window.removeEventListener("palassh-cart-updated", syncState);
+      window.removeEventListener("palassh-festive-updated", syncState);
+    };
   }, []);
+
+  const scrollReviewsRow = (direction: "left" | "right") => {
+    if (!reviewsScrollRef.current) return;
+    const offset = direction === "left" ? -340 : 340;
+    reviewsScrollRef.current.scrollBy({ left: offset, behavior: "smooth" });
+  };
 
   const openFlowerDetail = (flower: FlowerProduct) => {
     setActiveFlowerModal(flower);
-    setModalWeightIdx(0);
-    setModalQty(1);
+    const existing = cart.find((c) => c.flowerId === flower.id);
+    if (existing) {
+      const idx = flower.availableWeights.findIndex(
+        (w) => w.grams === existing.grams
+      );
+      setModalWeightIdx(idx >= 0 ? idx : 0);
+    } else {
+      setModalWeightIdx(0);
+    }
+    setCartError("");
   };
 
-  const handleAddToCartFromModal = (flower: FlowerProduct) => {
+  const handleSelectWeightAndAddToCart = (flower: FlowerProduct) => {
+    setCartError("");
     const weightObj =
       flower.availableWeights[modalWeightIdx] || flower.availableWeights[0];
+    const selectedGrams = weightObj.grams || 100;
 
-    const updatedCart = [...cart];
-    const existingIndex = updatedCart.findIndex(
-      (item) =>
-        item.flowerId === flower.id && item.weightLabel === weightObj.label
+    const otherFlowersGrams = cart
+      .filter((item) => item.flowerId !== flower.id)
+      .reduce((acc, i) => acc + (i.grams || 100), 0);
+
+    const tier = getCurrentCustomerTier();
+    const festive = getFestiveModeStatus();
+
+    const validation = validateDirectFlowerPurchaseLimit(
+      otherFlowersGrams,
+      selectedGrams,
+      tier,
+      festive.isFestiveDay
     );
 
-    if (existingIndex > -1) {
-      updatedCart[existingIndex].quantity += modalQty;
-    } else {
-      updatedCart.push({
-        id: `${flower.id}-${weightObj.grams}`,
-        flowerId: flower.id,
-        flowerName: flower.name,
-        imageUrl: flower.imageUrl,
-        weightLabel: weightObj.label,
-        unitPrice: weightObj.price,
-        quantity: modalQty,
-      });
+    if (!validation.allowed) {
+      setCartError(validation.reason || "Weight limit exceeded.");
+      return;
     }
+
+    const updatedCart = cart.filter((item) => item.flowerId !== flower.id);
+    updatedCart.push({
+      id: `${flower.id}-${selectedGrams}`,
+      flowerId: flower.id,
+      flowerName: flower.name,
+      marathiName: flower.marathiName,
+      imageUrl: flower.imageUrl,
+      weightLabel: `${selectedGrams}g`,
+      grams: selectedGrams,
+      unitPrice: weightObj.price,
+      quantity: 1,
+    });
 
     setCart(updatedCart);
     saveStoredCart(updatedCart);
     setActiveFlowerModal(null);
-    setIsCartOpen(true);
-    setCartToast(`Added ${modalQty}x ${flower.name} (${weightObj.label}) to Cart`);
-    setTimeout(() => setCartToast(""), 3500);
-  };
 
-  const handleUpdateCartQty = (id: string, delta: number) => {
-    const updated = cart
-      .map((item) =>
-        item.id === id
-          ? { ...item, quantity: Math.max(0, item.quantity + delta) }
-          : item
-      )
-      .filter((item) => item.quantity > 0);
-
-    setCart(updated);
-    saveStoredCart(updated);
+    const newTotalGrams = otherFlowersGrams + selectedGrams;
+    setPopupToast({
+      visible: true,
+      title: `${flower.name} (${flower.marathiName}) — ${selectedGrams}g Added!`,
+      subtitle: `Total Basket Weight: ${newTotalGrams}g • Tap 'Cart' in Navbar to checkout.`,
+    });
+    setTimeout(() => {
+      setPopupToast((prev) => ({ ...prev, visible: false }));
+    }, 4500);
   };
 
   const handleSubmitReview = (e: React.FormEvent) => {
     e.preventDefault();
     if (!reviewerName.trim() || !reviewerQuote.trim()) return;
-
     const newRev: CustomerReview = {
       id: `rev-${Date.now()}`,
       name: reviewerName.trim(),
-      society: reviewerSociety.trim() || "Thane / Mumbai Resident",
+      society: reviewerSociety.trim() || "Thane Resident (400601–400608)",
       rating: reviewerRating,
+      tag: "Verified Devotee",
       quote: reviewerQuote.trim(),
     };
-
     const updated = [newRev, ...reviews];
     setReviews(updated);
     try {
       localStorage.setItem(
-        "palassh_customer_reviews_v1",
+        "palassh_customer_reviews_v2",
         JSON.stringify(updated)
       );
     } catch {
       // Ignore error
     }
-
     setReviewerName("");
     setReviewerSociety("");
     setReviewerQuote("");
     setReviewerRating(5);
-    setShowReviewForm(false);
+    setReviewSubmittedMsg(
+      "Thank you! Your review is now live on the horizontal swipe wall above."
+    );
+    setTimeout(() => setReviewSubmittedMsg(""), 5000);
   };
 
-  const totalCartItems = cart.reduce((acc, i) => acc + i.quantity, 0);
-  const totalCartAmount = cart.reduce(
-    (acc, i) => acc + i.unitPrice * i.quantity,
-    0
-  );
+  const totalCartItems = cart.length;
+  const totalCartAmount = cart.reduce((acc, i) => acc + i.unitPrice, 0);
+  const totalCartGrams = cart.reduce((acc, i) => acc + (i.grams || 100), 0);
 
-  // Only show first 3 flowers on the homepage
   const homepageFlowers = flowers.slice(0, 3);
 
   return (
-    <div className="overflow-hidden bg-[#FAF7F2]">
-      {/* FLOATING CART TRIGGER BUTTON (Top-Right Dock) */}
-      <button
-        type="button"
-        onClick={() => setIsCartOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-3 rounded-full border-2 border-[#D97706] bg-[#071C15] px-5 py-3.5 text-white shadow-2xl transition hover:scale-105 cursor-pointer"
-      >
-        <ShoppingBag className="h-5 w-5 text-[#F05A36]" />
-        <div className="text-left">
-          <span className="block text-[10px] font-bold uppercase tracking-wider text-amber-300">
-            Flower Cart ({totalCartItems})
-          </span>
-          <span className="text-xs font-bold">₹{totalCartAmount}</span>
+    <div className="w-full max-w-[100vw] overflow-x-hidden bg-[#FAF7F2]">
+      {/* NON-INTRUSIVE POPUP TOAST (Top-Right) */}
+      {popupToast.visible && (
+        <div className="fixed top-24 right-3 left-3 sm:left-auto sm:right-6 z-50 sm:max-w-sm rounded-2xl border-2 border-emerald-400/80 bg-[#071C15] p-4 text-white shadow-2xl">
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-800/80 text-emerald-300">
+              <CheckCircle2 className="h-5 w-5" />
+            </div>
+            <div className="flex-1">
+              <p className="font-serif text-sm font-bold text-amber-200">
+                {popupToast.title}
+              </p>
+              <p className="mt-0.5 text-[11px] text-emerald-100/85">
+                {popupToast.subtitle}
+              </p>
+              <div className="mt-3 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPopupToast((prev) => ({ ...prev, visible: false }));
+                    window.dispatchEvent(new Event("palassh-open-cart"));
+                  }}
+                  className="rounded-lg bg-gradient-to-r from-emerald-600 to-teal-500 px-3 py-1.5 text-[11px] font-bold text-white cursor-pointer"
+                >
+                  Open Cart ({totalCartGrams}g)
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setPopupToast((prev) => ({ ...prev, visible: false }))
+                  }
+                  className="rounded-lg border border-white/20 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-200 hover:bg-white/10 cursor-pointer"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </button>
+      )}
 
-      {/* 1. LUXURY HERO SECTION */}
+      {/* 1. MOBILE-OPTIMIZED LUXURY HERO SECTION */}
       <FeatureBoundary featureName="HERO">
-        <section className="relative pt-10 pb-24 lg:pt-16 lg:pb-28 overflow-hidden">
-          <div className="pointer-events-none absolute -top-24 left-10 h-[420px] w-[420px] rounded-full bg-gradient-to-br from-orange-300/25 via-amber-200/15 to-transparent blur-3xl" />
-          <div className="pointer-events-none absolute top-1/3 right-10 h-[380px] w-[380px] rounded-full bg-gradient-to-tr from-emerald-500/15 via-teal-200/10 to-transparent blur-3xl" />
+        <section className="relative pt-6 pb-16 sm:pt-12 sm:pb-24 lg:pt-14 lg:pb-28 overflow-hidden">
+          <div className="pointer-events-none absolute -top-24 left-0 h-72 w-72 sm:h-[420px] sm:w-[420px] rounded-full bg-gradient-to-br from-emerald-300/25 via-teal-200/15 to-transparent blur-3xl" />
+          <div className="pointer-events-none absolute top-1/3 right-0 h-72 w-72 sm:h-[380px] sm:w-[380px] rounded-full bg-gradient-to-tr from-orange-300/20 via-amber-200/15 to-transparent blur-3xl" />
 
           <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
-              <div className="lg:col-span-6 space-y-6">
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#D97706]/30 bg-[#071C15] px-4 py-1.5 text-xs font-semibold text-amber-200 shadow-sm">
-                  <Leaf className="h-3.5 w-3.5 text-emerald-400" />
-                  <span>Farm-to-Mandir • Thane & Mumbai Societies</span>
-                </div>
-
-                <h1 className="font-serif text-5xl sm:text-6xl lg:text-[64px] font-bold leading-[1.06] tracking-tight text-stone-900">
-                  Sacred Puja Blooms,{" "}
-                  <span className="block mt-1 text-[#E8502B] italic font-normal">
-                    Your Way Every Morning.
-                  </span>
-                </h1>
-
-                <p className="max-w-lg text-base sm:text-lg text-stone-600 leading-relaxed">
-                  Order fresh{" "}
-                  <strong className="text-stone-900">
-                    Marigold, Chrysanthemum & Red Hibiscus
-                  </strong>{" "}
-                  whenever you need, or subscribe to a daily plan where you tick
-                  which flowers arrive on which day.
-                </p>
-
-                <div className="flex flex-wrap items-center gap-4 pt-2">
-                  <Link
-                    href="#fresh-flowers"
-                    className="inline-flex items-center gap-3 rounded-full bg-[#071C15] px-7 py-4 text-sm sm:text-base font-bold text-amber-100 shadow-xl transition hover:bg-[#0D3528]"
-                  >
-                    <ShoppingBag className="h-4 w-4 text-[#F05A36]" />
-                    <span>Shop Fresh Flowers</span>
-                  </Link>
-                  <Link
-                    href="#plans"
-                    className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-[#E8502B] via-[#F05A36] to-[#D97706] px-7 py-4 text-sm sm:text-base font-bold text-white shadow-xl shadow-orange-500/25 transition hover:scale-[1.02]"
-                  >
-                    <span>Explore Subscriptions</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-6 pt-6 border-t border-orange-200/60 text-xs font-semibold text-stone-700">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-[#E8502B]" />
-                    <span>One-Time OR Subscription</span>
+            <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-12">
+              <div className="lg:col-span-6 space-y-4 sm:space-y-6 text-left">
+                <ScrollReveal>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-50/90 px-3.5 py-1.5 text-[11px] sm:text-xs font-bold text-emerald-900 shadow-xs">
+                    <Leaf className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                    <span>Farm-to-Mandir • Thane (400601–400608)</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-emerald-600" />
-                    <span>Mixed OR Separate Flowers</span>
+                </ScrollReveal>
+
+                <ScrollReveal delayMs={70}>
+                  <h1 className="font-serif text-3xl sm:text-5xl lg:text-[60px] font-bold leading-[1.1] tracking-tight text-stone-900">
+                    Sacred Puja Blooms,{" "}
+                    <span className="block mt-1 text-[#E8502B] italic font-normal font-serif">
+                      flowers that pray with you.
+                    </span>
+                  </h1>
+                </ScrollReveal>
+
+                <ScrollReveal delayMs={130}>
+                  <p className="max-w-lg text-sm sm:text-base lg:text-lg text-stone-600 leading-relaxed">
+                    Order fresh{" "}
+                    <strong className="text-stone-900 font-semibold">
+                      Marigold (झेंडू), Chrysanthemum (शेवंती) & Red Hibiscus (लाल जास्वंद)
+                    </strong>{" "}
+                    a-la-carte, or subscribe from{" "}
+                    <strong className="text-emerald-800">₹49/day</strong> with silent{" "}
+                    <strong className="text-emerald-950">6:00 AM – 8:00 AM</strong> doorstep delivery.
+                  </p>
+                </ScrollReveal>
+
+                {/* Light-Green Botanical Primary CTA + Soft Emerald Outline CTA */}
+                <ScrollReveal delayMs={190}>
+                  <div className="grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-3 pt-1">
+                    <Link
+                      href="#fresh-flowers"
+                      className="inline-flex items-center justify-center gap-2.5 rounded-2xl sm:rounded-full bg-gradient-to-r from-emerald-600 to-teal-500 px-6 py-3.5 sm:py-4 text-xs sm:text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:brightness-105"
+                    >
+                      <ShoppingBag className="h-4 w-4 text-amber-200" />
+                      <span>Shop Fresh Flowers</span>
+                    </Link>
+                    <Link
+                      href="#plans"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl sm:rounded-full border-2 border-emerald-700/30 bg-emerald-50/70 px-6 py-3.5 sm:py-4 text-xs sm:text-sm font-bold text-emerald-950 shadow-xs transition hover:bg-emerald-100/80"
+                    >
+                      <span>Subscriptions From ₹49</span>
+                      <ArrowRight className="h-4 w-4 text-emerald-700" />
+                    </Link>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-amber-500" />
-                    <span>Day-Wise Checkbox Control</span>
+                </ScrollReveal>
+
+                <ScrollReveal delayMs={240}>
+                  <div className="flex flex-wrap items-center gap-3 sm:gap-6 pt-4 border-t border-emerald-200/70 text-[11px] sm:text-xs font-semibold text-stone-700">
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-emerald-600" />
+                      <span>₹49 Day • ₹329 Week • ₹1,350 Month</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-[#E8502B]" />
+                      <span>6:00 AM – 8:00 AM Silent Drop</span>
+                    </div>
                   </div>
-                </div>
+                </ScrollReveal>
               </div>
 
               <div className="lg:col-span-6">
-                <div className="relative mx-auto max-w-lg">
-                  <div className="absolute -inset-3 rounded-t-[11rem] rounded-b-[3rem] bg-gradient-to-br from-[#E8502B]/20 via-amber-200/20 to-emerald-600/20 blur-xl" />
-
-                  <div className="absolute -top-4 right-4 z-20 flex items-center gap-2.5 rounded-2xl border border-[#D97706]/30 bg-white/95 px-4 py-2.5 shadow-lg backdrop-blur-md">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-950 text-amber-300">
-                      <SlidersHorizontal className="h-4 w-4" />
-                    </span>
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#E8502B]">
-                        100% Customizable Ritual
-                      </p>
-                      <p className="text-xs font-bold text-stone-900">
-                        Marigold • Chrysanthemum • Red Hibiscus
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="relative overflow-hidden rounded-t-[10rem] rounded-b-[2.5rem] border-[6px] border-white bg-stone-100 shadow-2xl aspect-4/4">
-                    <img
-                      src="/images/hero-banner.jpg"
-                      alt="PALASSH Morning Puja Basket"
-                      className="h-full w-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#071C15]/90 via-transparent to-transparent" />
-
-                    <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between rounded-2xl border border-amber-300/30 bg-[#071C15]/85 px-5 py-3.5 text-white backdrop-blur-md">
-                      <div>
-                        <p className="font-serif text-base font-bold text-amber-200">
-                          “Flowers that pray with you”
-                        </p>
-                        <p className="text-[11px] text-emerald-100">
-                          Silent Doorstep Delivery • 5:00 AM to 8:00 AM
-                        </p>
+                <ScrollReveal delayMs={150}>
+                  <div className="relative mx-auto max-w-sm sm:max-w-md lg:max-w-lg">
+                    <div className="relative overflow-hidden rounded-t-[6rem] sm:rounded-t-[10rem] rounded-b-[1.75rem] sm:rounded-b-[2.5rem] border-4 sm:border-[6px] border-white bg-stone-100 shadow-2xl aspect-4/4">
+                      <img
+                        src="/images/hero-banner.jpg"
+                        alt="PALASSH Morning Puja Basket"
+                        className="h-full w-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#071C15]/90 via-transparent to-transparent" />
+                      <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 flex items-center justify-between gap-2 rounded-xl sm:rounded-2xl border border-emerald-400/30 bg-[#071C15]/90 px-3.5 py-2.5 sm:px-4 sm:py-3 text-white backdrop-blur-md">
+                        <div className="min-w-0">
+                          <p className="font-serif text-xs sm:text-base font-bold text-amber-200 italic truncate">
+                            “flowers that pray with you”
+                          </p>
+                          <p className="text-[10px] sm:text-[11px] text-emerald-100 truncate">
+                            Morning Window • 6:00 AM – 8:00 AM
+                          </p>
+                        </div>
+                        <span className="rounded-full bg-gradient-to-r from-emerald-600 to-teal-500 px-3 py-1 text-[11px] font-bold text-white shrink-0">
+                          ₹49 / day
+                        </span>
                       </div>
-                      <span className="rounded-full bg-gradient-to-r from-[#E8502B] to-[#D97706] px-3.5 py-1.5 text-xs font-bold text-white shadow-sm">
-                        From ₹35
-                      </span>
                     </div>
                   </div>
-                </div>
+                </ScrollReveal>
               </div>
             </div>
           </div>
         </section>
       </FeatureBoundary>
 
-      {/* 2. PINCODE CONCIERGE DOCK */}
+      {/* 2. PINCODE CONCIERGE DOCK (400601-400608) */}
       <FeatureBoundary featureName="PINCODE">
         <PincodeBox />
       </FeatureBoundary>
 
-      {/* 3. MINIMAL 3-CARD FLOWER SHOWCASE (CLICK TO OPEN DETAIL MODAL) */}
+      {/* 3. A-LA-CARTE FRESH FLOWERS STORE (Light-Green Accents) */}
       <FeatureBoundary featureName="DIRECT_FLOWER_STORE">
         <section
           id="fresh-flowers"
-          className="py-24 px-4 sm:px-6 lg:px-8 mx-auto max-w-7xl border-b border-orange-200/60"
+          className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 mx-auto max-w-7xl border-b border-emerald-200/60"
         >
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-3 max-w-2xl">
-              <div className="inline-flex items-center gap-2 rounded-full bg-orange-100/90 border border-orange-200 px-3.5 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[#E8502B]">
-                <ShoppingBag className="h-3.5 w-3.5" />
-                <span>A-La-Carte Fresh Blooms</span>
+          <ScrollReveal>
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+              <div className="space-y-2 max-w-2xl">
+                <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100/80 border border-emerald-300 px-3.5 py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-900">
+                  <ShoppingBag className="h-3.5 w-3.5 text-emerald-700" />
+                  <span>A-La-Carte Fresh Blooms</span>
+                </div>
+                <h2 className="font-serif text-2xl sm:text-5xl font-bold text-stone-900">
+                  Shop Sacred Puja Flowers
+                </h2>
+                <p className="text-xs sm:text-base text-stone-600">
+                  Select exact weight in grams (<strong className="text-stone-900">100g, 250g, 500g</strong>). Normal days allow up to <strong className="text-stone-900">500g combined</strong>; Weekly (<strong className="text-emerald-800">2 KG</strong>) & Monthly (<strong className="text-emerald-800">3 KG</strong>) unlock festive quotas.
+                </p>
               </div>
-              <h2 className="font-serif text-4xl sm:text-5xl font-bold text-stone-900">
-                Shop Sacred Puja Flowers
-              </h2>
-              <p className="text-sm sm:text-base text-stone-600">
-                Click on any flower card below to view weight packs, select
-                quantities, add multiple flowers to your cart, or buy directly.
-              </p>
+
+              <button
+                type="button"
+                onClick={() =>
+                  window.dispatchEvent(new Event("palassh-open-cart"))
+                }
+                className="inline-flex items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 px-5 py-3.5 text-xs font-bold text-white shadow-md shadow-emerald-600/20 hover:brightness-105 cursor-pointer shrink-0"
+              >
+                <ShoppingBag className="h-4 w-4 text-amber-200" />
+                <span>
+                  Flower Basket ({totalCartItems} • {totalCartGrams}g • ₹
+                  {totalCartAmount})
+                </span>
+              </button>
             </div>
+          </ScrollReveal>
 
-            <button
-              type="button"
-              onClick={() => setIsCartOpen(true)}
-              className="inline-flex items-center gap-3 rounded-2xl border border-emerald-800/20 bg-[#071C15] px-5 py-3.5 text-xs font-bold text-amber-200 shadow-sm hover:bg-[#0D3528] cursor-pointer"
-            >
-              <ShoppingBag className="h-4 w-4 text-[#F05A36]" />
-              <span>
-                View Cart ({totalCartItems} items • ₹{totalCartAmount})
-              </span>
-            </button>
-          </div>
-
-          {cartToast && (
-            <div className="mt-6 flex items-center gap-2.5 rounded-2xl border border-emerald-300 bg-emerald-50 px-5 py-3.5 text-sm font-bold text-emerald-950 shadow-sm">
-              <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
-              <span>{cartToast}</span>
+          {festiveStatus.isFestiveDay && (
+            <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-emerald-400 bg-[#071C15] px-4 py-3.5 text-white shadow-lg">
+              <div className="flex items-center gap-2.5">
+                <Flame className="h-5 w-5 text-amber-400 shrink-0" />
+                <p className="text-xs text-emerald-100">
+                  <strong className="text-amber-300">Festive Mode Active:</strong> Direct orders reserved for Weekly (2 KG) & Monthly (3 KG) subscribers.
+                </p>
+              </div>
             </div>
           )}
 
-          {/* Strictly 3 Minimal Flower Cards on Homepage */}
-          <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3">
-            {homepageFlowers.map((flower) => {
+          {/* 3 Homepage Flower Cards */}
+          <div className="mt-8 sm:mt-12 grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-3">
+            {homepageFlowers.map((flower, idx) => {
               const startingWeight = flower.availableWeights[0];
+              const inCartItem = cart.find((c) => c.flowerId === flower.id);
               return (
-                <div
-                  key={flower.id}
-                  onClick={() => openFlowerDetail(flower)}
-                  className="group flex flex-col justify-between overflow-hidden rounded-[2rem] border border-stone-200/90 bg-white shadow-lg shadow-stone-900/5 transition hover:-translate-y-1 hover:border-[#D97706] hover:shadow-xl cursor-pointer"
-                >
-                  <div>
-                    <div className="relative aspect-4/3 w-full overflow-hidden bg-stone-100">
-                      <img
-                        src={flower.imageUrl}
-                        alt={flower.name}
-                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#071C15]/80 via-transparent to-transparent" />
-
-                      <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3.5 py-1 text-[11px] font-bold text-emerald-950 shadow-sm backdrop-blur-md">
-                        Fresh Farm Harvest
-                      </span>
-
-                      <div className="absolute bottom-3.5 left-4 right-4 flex items-center justify-between text-white">
-                        <span className="text-xs font-medium text-emerald-100">
-                          {startingWeight.label}
+                <ScrollReveal key={flower.id} delayMs={idx * 120}>
+                  <div
+                    onClick={() => openFlowerDetail(flower)}
+                    className="group flex flex-col justify-between h-full overflow-hidden rounded-3xl sm:rounded-[2.2rem] border border-emerald-900/15 bg-white shadow-md transition-all duration-300 hover:-translate-y-1.5 hover:border-emerald-500 hover:shadow-xl cursor-pointer"
+                  >
+                    <div>
+                      <div className="relative aspect-4/3 w-full overflow-hidden bg-stone-100">
+                        <img
+                          src={flower.imageUrl}
+                          alt={flower.name}
+                          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#071C15]/85 via-transparent to-transparent" />
+                        <span className="absolute left-3.5 top-3.5 rounded-full bg-white/95 px-3 py-1 text-[10px] sm:text-[11px] font-bold text-emerald-950 shadow-xs">
+                          {inCartItem
+                            ? `In Basket: ${inCartItem.grams}g`
+                            : "Fresh Farm Harvest"}
                         </span>
-                        <span className="rounded-lg bg-[#E8502B] px-3 py-1 text-xs font-bold shadow-sm">
-                          From ₹{startingWeight.price}
-                        </span>
+                        <div className="absolute bottom-3 left-3.5 right-3.5 flex items-center justify-between text-white">
+                          <span className="rounded-full bg-black/45 backdrop-blur-md px-2.5 py-1 text-[11px] font-semibold text-emerald-100">
+                            100g • 250g • 500g
+                          </span>
+                          <span className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-bold shadow-xs">
+                            From ₹{startingWeight.price}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="p-5 sm:p-6">
+                        <div className="flex items-baseline gap-2 flex-wrap">
+                          <h3 className="font-serif text-xl sm:text-2xl font-bold text-stone-900 group-hover:text-emerald-700 transition">
+                            {flower.name}
+                          </h3>
+                          <span className="text-xs font-semibold text-emerald-900 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                            {flower.marathiName}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-xs text-stone-500">
+                          {flower.subtitle}
+                        </p>
                       </div>
                     </div>
 
-                    <div className="p-6">
-                      <h3 className="font-serif text-2xl font-bold text-stone-900 group-hover:text-[#E8502B] transition">
-                        {flower.name}
-                      </h3>
-                      <p className="mt-1 text-xs text-stone-500">
-                        {flower.subtitle}
-                      </p>
+                    <div className="px-5 pb-5 sm:px-6 sm:pb-6 pt-1">
+                      <div className="flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50/70 py-3 text-xs font-bold text-emerald-900 group-hover:bg-gradient-to-r group-hover:from-emerald-600 group-hover:to-teal-500 group-hover:text-white transition">
+                        <Eye className="h-3.5 w-3.5" />
+                        <span>Select Weight (100g / 250g / 500g)</span>
+                      </div>
                     </div>
                   </div>
-
-                  <div className="px-6 pb-6 pt-2">
-                    <div className="flex w-full items-center justify-center gap-2 rounded-xl border border-stone-200 bg-[#FAF7F2] py-3 text-xs font-bold text-stone-800 group-hover:border-[#E8502B] group-hover:bg-[#E8502B] group-hover:text-white transition">
-                      <Eye className="h-3.5 w-3.5" />
-                      <span>Select Pack & Buy / Add to Cart</span>
-                    </div>
-                  </div>
-                </div>
+                </ScrollReveal>
               );
             })}
           </div>
 
-          {/* VIEW ALL PRODUCTS BUTTON */}
-          <div className="mt-12 text-center">
+          <div className="mt-10 text-center">
             <Link
               href="/products"
-              className="inline-flex items-center gap-3 rounded-full border-2 border-[#071C15] bg-white px-8 py-4 text-sm font-bold text-[#071C15] shadow-md transition hover:bg-[#071C15] hover:text-amber-200"
+              className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-emerald-600 to-teal-500 px-7 py-3.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-emerald-600/20 transition hover:brightness-105"
             >
-              <span>View All Registered Flowers & Packs</span>
+              <span>View All Registered Flowers (/products)</span>
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -472,293 +627,281 @@ export default function HomePage() {
       {/* 5. 3-STEP RITUAL STRIP */}
       <section
         id="how-it-works"
-        className="relative border-y border-orange-200/60 bg-gradient-to-b from-white via-[#FFFDFB] to-[#F4FBF7] py-24 px-4 sm:px-6 lg:px-8"
+        className="relative border-y border-emerald-200/60 bg-gradient-to-b from-white via-[#FFFDFB] to-[#F2FAF6] py-16 sm:py-24 px-4 sm:px-6 lg:px-8"
       >
         <div className="mx-auto max-w-7xl">
-          <div className="mx-auto max-w-2xl text-center space-y-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3.5 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-800">
-              <Sparkles className="h-3 w-3 text-[#E8502B]" /> Complete
-              Flexibility
-            </span>
-            <h2 className="font-serif text-3xl sm:text-5xl font-bold text-stone-900">
-              How Your PALASSH Ritual Works
-            </h2>
-          </div>
+          <ScrollReveal>
+            <div className="mx-auto max-w-2xl text-center space-y-2.5">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100/80 border border-emerald-300 px-3.5 py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-900">
+                <Sparkles className="h-3 w-3 text-emerald-700" /> Effortless Devotion
+              </span>
+              <h2 className="font-serif text-2xl sm:text-5xl font-bold text-stone-900">
+                How Your PALASSH Ritual Works
+              </h2>
+            </div>
+          </ScrollReveal>
 
-          <div className="mt-14 grid grid-cols-1 gap-8 md:grid-cols-3">
+          <div className="mt-10 sm:mt-14 grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-3">
             {[
               {
                 step: "01",
                 icon: CalendarCheck,
-                accent: "from-[#E8502B] to-[#F59E0B]",
-                title: "Buy Direct OR Subscribe",
-                desc: "Order individual packs of Marigold, Chrysanthemum, or Red Hibiscus anytime, or choose a Daily, Weekly, or Monthly plan.",
+                title: "Choose Plan or Weight Pack",
+                desc: "Subscribe to One Day (₹49), Weekly (₹329), Monthly (₹1,350) or pick individual flower weight packs (up to 500g).",
               },
               {
                 step: "02",
-                icon: SlidersHorizontal,
-                accent: "from-[#059669] to-[#0D9488]",
-                title: "Tick Flowers via Checkboxes",
-                desc: "Tick 'Mixed Box' or tick individual flower checkboxes. You can even tick different flowers for each day in My-Orders.",
+                icon: Clock,
+                title: "6–8 AM Silent Doorstep Drop",
+                desc: "Every morning between 6:00 AM and 8:00 AM, our rider hangs your breathable flower pouch on your door without ringing the bell.",
               },
               {
                 step: "03",
                 icon: PauseCircle,
-                accent: "from-[#D97706] to-[#E8502B]",
-                title: "5–8 AM Drop & 1-Click Pause",
-                desc: "Delivered silently without ringing the bell. Traveling out of station? Pause individual dates before 8:00 PM.",
+                title: "1-Click Pause Anytime",
+                desc: "Traveling out of Thane? Pause before 8:00 PM from your My-Orders dashboard and your remaining days carry forward.",
               },
-            ].map((item) => (
-              <div
-                key={item.step}
-                className="group relative overflow-hidden rounded-[2rem] border border-orange-100 bg-white p-8 shadow-md shadow-stone-900/5 transition hover:-translate-y-1 hover:border-emerald-300/80 hover:shadow-xl"
-              >
-                <div className="flex items-center justify-between">
-                  <div
-                    className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${item.accent} text-white shadow-md`}
-                  >
-                    <item.icon className="h-6 w-6" />
+            ].map((item, i) => (
+              <ScrollReveal key={item.step} delayMs={i * 120}>
+                <div className="group relative overflow-hidden rounded-3xl sm:rounded-[2rem] border border-emerald-100 bg-white p-6 sm:p-8 shadow-md transition hover:-translate-y-1 hover:border-emerald-400 h-full">
+                  <div className="flex items-center justify-between">
+                    <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-500 text-white shadow-sm">
+                      <item.icon className="h-5 w-5 sm:h-6 sm:w-6" />
+                    </div>
+                    <span className="font-serif text-3xl sm:text-4xl font-bold text-emerald-900/15">
+                      {item.step}
+                    </span>
                   </div>
-                  <span className="font-serif text-4xl font-bold text-stone-200 group-hover:text-emerald-700/30 transition">
-                    {item.step}
-                  </span>
+                  <h3 className="mt-5 font-serif text-xl sm:text-2xl font-bold text-stone-900">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2 text-xs sm:text-sm leading-relaxed text-stone-600">
+                    {item.desc}
+                  </p>
                 </div>
-                <h3 className="mt-6 font-serif text-2xl font-bold text-stone-900">
-                  {item.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-stone-600">
-                  {item.desc}
-                </p>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 6. DEVOTEE REVIEWS + ADD REVIEW FORM + FAQ + GOOGLE MAPS LOCATION */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 mx-auto max-w-7xl space-y-24">
-        {/* Reviews Section with Add Review Button */}
+      {/* 6. SINGLE-LINE HORIZONTAL SWIPEABLE REVIEWS CAROUSEL + INLINE REVIEW FORM */}
+      <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 mx-auto max-w-7xl space-y-16">
         <div>
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
             <div className="space-y-2">
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-800">
-                80+ Societies Across Thane & Mumbai
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 border border-emerald-300 px-3.5 py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-900">
+                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" />
+                <span>Swipe Left / Right • Thane Pincodes 400601–400608</span>
               </span>
-              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-stone-900">
-                Morning Blessings, Shared by Families
+              <h2 className="font-serif text-2xl sm:text-4xl font-bold text-stone-900">
+                Morning Blessings from Thane Families
               </h2>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setShowReviewForm(!showReviewForm)}
-              className="inline-flex items-center gap-2 rounded-full bg-[#071C15] px-5 py-3 text-xs font-bold text-amber-200 shadow-sm hover:bg-[#0D3528] cursor-pointer"
-            >
-              <MessageSquarePlus className="h-4 w-4 text-[#F05A36]" />
-              <span>{showReviewForm ? "Close Form" : "+ Write a Review"}</span>
-            </button>
+            {/* Desktop Left/Right Carousel Buttons */}
+            <div className="hidden sm:flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => scrollReviewsRow("left")}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-emerald-300 bg-white text-emerald-900 hover:bg-emerald-50 cursor-pointer shadow-2xs"
+                aria-label="Scroll Reviews Left"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollReviewsRow("right")}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white hover:brightness-105 cursor-pointer shadow-sm"
+                aria-label="Scroll Reviews Right"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
           </div>
 
-          {/* Interactive Add Review Form */}
-          {showReviewForm && (
-            <form
-              onSubmit={handleSubmitReview}
-              className="mt-8 rounded-3xl border border-orange-200 bg-white p-6 sm:p-8 shadow-lg space-y-4"
-            >
-              <h3 className="font-serif text-xl font-bold text-stone-900">
-                Share Your PALASSH Morning Experience
-              </h3>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div>
-                  <label className="block text-xs font-semibold text-stone-600 mb-1">
-                    Your Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Rohan Kulkarni"
-                    value={reviewerName}
-                    onChange={(e) => setReviewerName(e.target.value)}
-                    className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm text-stone-900 focus:border-[#E8502B] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-stone-600 mb-1">
-                    Society & Area *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Glenmark Residency, Kalwa"
-                    value={reviewerSociety}
-                    onChange={(e) => setReviewerSociety(e.target.value)}
-                    className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm text-stone-900 focus:border-[#E8502B] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-stone-600 mb-1">
-                    Rating
-                  </label>
-                  <select
-                    value={reviewerRating}
-                    onChange={(e) => setReviewerRating(Number(e.target.value))}
-                    className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm font-bold text-stone-900 focus:border-[#E8502B] focus:outline-none"
-                  >
-                    <option value={5}>★★★★★ (5/5 Sacred Quality)</option>
-                    <option value={4}>★★★★☆ (4/5 Great Service)</option>
-                    <option value={3}>★★★☆☆ (3/5 Good)</option>
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-stone-600 mb-1">
-                  Your Review *
-                </label>
-                <textarea
-                  rows={3}
-                  required
-                  placeholder="Tell other families about flower freshness, morning silent delivery, or custom checkboxes..."
-                  value={reviewerQuote}
-                  onChange={(e) => setReviewerQuote(e.target.value)}
-                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm text-stone-900 focus:border-[#E8502B] focus:outline-none"
-                />
-              </div>
-              <button
-                type="submit"
-                className="rounded-xl bg-gradient-to-r from-[#E8502B] to-[#D97706] px-6 py-3 text-xs font-bold text-white shadow-md cursor-pointer"
-              >
-                Publish Review
-              </button>
-            </form>
-          )}
-
-          <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+          {/* SINGLE-LINE HORIZONTAL SWIPEABLE CARDS CONTAINER */}
+          <div
+            ref={reviewsScrollRef}
+            className="flex gap-4 sm:gap-6 overflow-x-auto pb-6 pt-1 snap-x snap-mandatory scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
             {reviews.map((rev) => (
               <div
                 key={rev.id}
-                className="flex flex-col justify-between rounded-3xl border border-orange-100 bg-white p-7 shadow-xs hover:border-emerald-200 transition"
+                className="w-[84vw] sm:w-[350px] md:w-[370px] shrink-0 snap-center sm:snap-start flex flex-col justify-between rounded-3xl border border-emerald-900/15 bg-white p-6 shadow-md hover:border-emerald-500 transition"
               >
                 <div>
-                  <div className="flex items-center gap-1 text-amber-500">
-                    {[...Array(rev.rating)].map((_, idx) => (
-                      <Star key={idx} className="h-4 w-4 fill-amber-400" />
-                    ))}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1 text-amber-500">
+                      {[...Array(rev.rating || 5)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-amber-400" />
+                      ))}
+                    </div>
+                    {rev.tag && (
+                      <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[10px] font-bold text-emerald-900">
+                        {rev.tag}
+                      </span>
+                    )}
                   </div>
-                  <p className="mt-4 text-sm leading-relaxed text-stone-700">
+                  <p className="mt-4 text-xs sm:text-sm leading-relaxed text-stone-700 italic">
                     “{rev.quote}”
                   </p>
                 </div>
-                <div className="mt-6 border-t border-stone-100 pt-4 flex items-center justify-between">
-                  <div>
-                    <p className="font-serif text-base font-bold text-stone-900">
+
+                <div className="mt-5 border-t border-stone-100 pt-3.5 flex items-center justify-between">
+                  <div className="min-w-0">
+                    <p className="font-serif text-sm sm:text-base font-bold text-stone-900 truncate">
                       {rev.name}
                     </p>
-                    <p className="text-xs text-emerald-800 font-medium">
+                    <p className="text-[11px] text-emerald-800 font-medium truncate">
                       {rev.society}
                     </p>
                   </div>
-                  <ShieldCheck className="h-5 w-5 text-emerald-600" />
+                  <ShieldCheck className="h-5 w-5 text-emerald-600 shrink-0" />
                 </div>
               </div>
             ))}
           </div>
-        </div>
 
-        {/* PALASSH HUB ADDRESS & GOOGLE MAPS DIRECTION BOX */}
-        <div className="overflow-hidden rounded-[2.5rem] border border-stone-200 bg-white shadow-xl shadow-stone-900/5">
-          <div className="grid grid-cols-1 lg:grid-cols-12">
-            <div className="lg:col-span-5 flex flex-col justify-between bg-[#071C15] p-8 sm:p-10 text-white">
-              <div className="space-y-4">
-                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-900/80 border border-amber-400/30 px-3.5 py-1 text-[11px] font-bold uppercase tracking-widest text-amber-300">
-                  <MapPin className="h-3.5 w-3.5 text-[#F05A36]" />
-                  <span>Visit Our Thane Hub & Store</span>
+          {/* DEDICATED INLINE REVIEW SUBMISSION SECTION */}
+          <div className="mt-10 overflow-hidden rounded-3xl sm:rounded-[2.5rem] border border-emerald-800/30 bg-gradient-to-br from-[#071C15] via-[#0B2B20] to-[#071C15] p-5 sm:p-10 text-white shadow-xl">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-center">
+              <div className="lg:col-span-5 space-y-3">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-900/80 border border-emerald-600 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-emerald-200">
+                  <Sparkles className="h-3 w-3 text-amber-300" />
+                  <span>Add Your Blessing</span>
                 </span>
-                <h2 className="font-serif text-3xl font-bold text-white leading-tight">
-                  PALASSH Sacred Flower Hub
-                </h2>
-                <p className="text-xs sm:text-sm text-emerald-100/85 leading-relaxed">
-                  All morning pouches are sorted, misted with pure water, and
-                  dispatched fresh from our Kharegaon, Kalwa hub. You can also
-                  visit us directly for bulk wedding or festival flower orders.
+                <h3 className="font-serif text-2xl sm:text-3xl font-bold leading-tight">
+                  Share Your PALASSH Morning Experience
+                </h3>
+                <p className="text-xs sm:text-sm text-emerald-100/80 leading-relaxed">
+                  Your review appears immediately in the swipeable Thane Devotee row above.
                 </p>
+              </div>
 
-                <div className="rounded-2xl border border-emerald-800 bg-emerald-950/80 p-4 space-y-1.5">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-amber-300">
-                    Registered Store Address:
-                  </p>
-                  <p className="text-xs sm:text-sm font-medium text-white leading-relaxed">
-                    {SHOP_ADDRESS}
-                  </p>
+              <form
+                onSubmit={handleSubmitReview}
+                className="lg:col-span-7 rounded-2xl sm:rounded-3xl bg-white p-5 sm:p-7 text-stone-900 shadow-lg space-y-4"
+              >
+                {reviewSubmittedMsg && (
+                  <div className="flex items-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 p-3 text-xs font-bold text-emerald-900">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                    <span>{reviewSubmittedMsg}</span>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Mrs. Deshmukh"
+                      value={reviewerName}
+                      onChange={(e) => setReviewerName(e.target.value)}
+                      className="w-full rounded-xl border border-stone-300 bg-[#FAF7F2] px-3.5 py-2.5 text-sm text-stone-900 focus:border-emerald-600 focus:bg-white focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">
+                      Society & Thane Pincode *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Hiranandani Estate (400607)"
+                      value={reviewerSociety}
+                      onChange={(e) => setReviewerSociety(e.target.value)}
+                      className="w-full rounded-xl border border-stone-300 bg-[#FAF7F2] px-3.5 py-2.5 text-sm text-stone-900 focus:border-emerald-600 focus:bg-white focus:outline-none"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div className="mt-8 pt-4 border-t border-emerald-800/80 flex flex-wrap items-center gap-3">
-                <a
-                  href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-                    SHOP_ADDRESS
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#E8502B] to-[#D97706] px-6 py-3.5 text-xs font-bold text-white shadow-lg transition hover:brightness-110"
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">
+                    Rating
+                  </label>
+                  <div className="flex items-center gap-1.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setReviewerRating(star)}
+                        className={`h-8 w-10 rounded-lg border flex items-center justify-center text-sm font-bold transition cursor-pointer ${
+                          reviewerRating >= star
+                            ? "border-amber-400 bg-amber-50 text-amber-500"
+                            : "border-stone-200 bg-white text-stone-300"
+                        }`}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">
+                    Your Experience *
+                  </label>
+                  <textarea
+                    required
+                    rows={2}
+                    placeholder="Tell us about the morning flower freshness or 6–8 AM silent delivery..."
+                    value={reviewerQuote}
+                    onChange={(e) => setReviewerQuote(e.target.value)}
+                    className="w-full rounded-xl border border-stone-300 bg-[#FAF7F2] p-3 text-sm text-stone-900 focus:border-emerald-600 focus:bg-white focus:outline-none"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 py-3.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-emerald-600/20 hover:brightness-105 cursor-pointer"
                 >
-                  <Navigation className="h-4 w-4" />
-                  <span>Get Directions on Google Maps</span>
-                </a>
-              </div>
-            </div>
-
-            <div className="lg:col-span-7 min-h-[340px] bg-stone-100">
-              <iframe
-                title="PALASSH Store Location - Kalwa Thane"
-                src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                  SHOP_ADDRESS
-                )}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
-                className="h-full w-full min-h-[340px] border-0"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
+                  <Send className="h-4 w-4" />
+                  <span>Publish Review</span>
+                </button>
+              </form>
             </div>
           </div>
         </div>
 
-        {/* LUXURY 2-COLUMN FAQ SECTION */}
-        <div className="rounded-[2.5rem] border border-emerald-900/10 bg-gradient-to-br from-white via-[#FFFDFB] to-emerald-50/40 p-8 sm:p-12 lg:p-16 shadow-xl shadow-stone-900/5">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
-            <div className="lg:col-span-5 flex flex-col justify-between space-y-6">
-              <div className="space-y-4">
-                <span className="inline-flex items-center gap-2 rounded-full bg-orange-100/80 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-[#E8502B]">
+        {/* 7. FAQ SECTION */}
+        <div className="rounded-3xl sm:rounded-[2.5rem] border border-emerald-900/15 bg-white p-5 sm:p-10 lg:p-14 shadow-lg">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+            <div className="lg:col-span-5 flex flex-col justify-between space-y-5">
+              <div className="space-y-3">
+                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-200 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-emerald-800">
                   <Sparkles className="h-3.5 w-3.5" />
-                  <span>Frequently Asked Questions</span>
+                  <span>Common Questions</span>
                 </span>
-                <h2 className="font-serif text-3xl sm:text-4xl font-bold text-stone-900 leading-tight">
+                <h2 className="font-serif text-2xl sm:text-4xl font-bold text-stone-900 leading-tight">
                   Everything About Your Morning Flower Ritual.
                 </h2>
-                <p className="text-sm text-stone-600 leading-relaxed">
-                  Have a specific question about one-time flower orders,
-                  day-wise flower checkboxes, or morning timings? Here is how we
-                  care for your daily puja.
+                <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
+                  Clear answers on our 6:00 AM – 8:00 AM delivery slot, 500g normal limits, and Festive 2 KG / 3 KG subscriber quotas.
                 </p>
               </div>
 
-              <div className="rounded-3xl bg-gradient-to-br from-[#064E3B] to-[#0D281D] p-6 text-white shadow-lg">
-                <p className="text-xs font-bold uppercase tracking-widest text-emerald-300">
-                  Thane & Mumbai Morning Desk
+              <div className="rounded-2xl sm:rounded-3xl bg-[#071C15] p-5 sm:p-6 text-white space-y-2.5">
+                <p className="text-[11px] font-bold uppercase tracking-widest text-amber-300">
+                  Kalwa Dispatch Hub
                 </p>
-                <h3 className="mt-1 font-serif text-xl font-bold">
-                  Need Bulk Toran or Event Flowers?
-                </h3>
-                <p className="mt-1 text-xs text-emerald-100/80 leading-relaxed">
-                  Our team is available on WhatsApp from 6:00 AM to 9:00 PM for
-                  society onboarding & custom festival orders.
+                <p className="text-xs text-emerald-100/85 leading-relaxed flex items-start gap-2">
+                  <MapPin className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <span>{SHOP_ADDRESS}</span>
                 </p>
-                <div className="mt-4 inline-flex items-center gap-2 rounded-xl bg-white/15 px-4 py-2.5 text-xs font-bold text-amber-200 backdrop-blur-xs">
-                  <PhoneCall className="h-4 w-4 text-emerald-300" />
-                  <span>Manage Day-Wise Schedule in My-Orders</span>
+                <div className="pt-2 border-t border-white/10">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-200">
+                    <PhoneCall className="h-3.5 w-3.5 text-emerald-400" />
+                    <span>Morning Slot: 6:00 AM – 8:00 AM Daily</span>
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div className="lg:col-span-7 space-y-4">
+            <div className="lg:col-span-7 space-y-3">
               {FAQS.map((item, idx) => {
                 const isOpen = openFaq === idx;
                 return (
@@ -766,35 +909,35 @@ export default function HomePage() {
                     key={item.q}
                     className={`overflow-hidden rounded-2xl border transition-all ${
                       isOpen
-                        ? "border-[#E8502B] bg-white shadow-md"
-                        : "border-stone-200/80 bg-white/80 hover:border-orange-300"
+                        ? "border-emerald-600 bg-emerald-50/20 shadow-xs"
+                        : "border-stone-200 bg-white hover:border-emerald-300"
                     }`}
                   >
                     <button
                       type="button"
                       onClick={() => setOpenFaq(isOpen ? null : idx)}
-                      className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left cursor-pointer"
+                      className="flex w-full items-center justify-between gap-3 px-4 sm:px-6 py-4 text-left cursor-pointer"
                     >
                       <div className="space-y-1">
-                        <span className="inline-block rounded-md bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-800">
+                        <span className="inline-block rounded-md bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-800">
                           {item.tag}
                         </span>
-                        <p className="font-serif text-base sm:text-lg font-bold text-stone-900">
+                        <p className="font-serif text-sm sm:text-base font-bold text-stone-900">
                           {item.q}
                         </p>
                       </div>
                       <div
-                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition ${
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition ${
                           isOpen
-                            ? "bg-[#E8502B] text-white rotate-180"
-                            : "bg-orange-50 text-[#E8502B]"
+                            ? "bg-emerald-600 text-white rotate-180"
+                            : "bg-emerald-50 text-emerald-800"
                         }`}
                       >
                         <ChevronDown className="h-4 w-4" />
                       </div>
                     </button>
                     {isOpen && (
-                      <div className="border-t border-orange-100/80 px-6 py-4 text-sm leading-relaxed text-stone-600 bg-[#FAF7F2]/50">
+                      <div className="border-t border-emerald-100 px-4 sm:px-6 py-3.5 text-xs sm:text-sm leading-relaxed text-stone-600 bg-white">
                         {item.a}
                       </div>
                     )}
@@ -806,257 +949,94 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FLOWER DETAIL MODAL (OPENS WHEN USER CLICKS ANY FLOWER CARD) */}
+      {/* FLOWER WEIGHT SELECTOR MODAL (STRICTLY GRAMS ONLY) */}
       {activeFlowerModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-xs">
-          <div className="relative max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-[2rem] border border-stone-200 bg-white p-6 sm:p-8 shadow-2xl">
+          <div className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-stone-200 bg-white p-5 sm:p-8 shadow-2xl">
             <button
               type="button"
               onClick={() => setActiveFlowerModal(null)}
-              className="absolute right-5 top-5 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-stone-800 shadow-md hover:bg-stone-100 cursor-pointer"
+              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-stone-100 text-stone-700 hover:bg-stone-200 cursor-pointer"
             >
               <X className="h-4 w-4" />
             </button>
 
-            <div className="relative aspect-16/10 w-full overflow-hidden rounded-2xl bg-stone-100">
+            <div className="flex items-center gap-3.5 border-b border-stone-100 pb-4 pr-8">
               <img
                 src={activeFlowerModal.imageUrl}
                 alt={activeFlowerModal.name}
-                className="h-full w-full object-cover"
+                className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl object-cover border border-stone-200 shrink-0"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#071C15]/80 via-transparent to-transparent" />
-              <span className="absolute bottom-3 left-4 rounded-full bg-[#071C15]/90 px-3 py-1 text-[11px] font-bold text-amber-300">
-                {activeFlowerModal.deityAffinity}
-              </span>
+              <div>
+                <span className="inline-block rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-800">
+                  {activeFlowerModal.deityAffinity}
+                </span>
+                <h3 className="mt-1 font-serif text-xl sm:text-2xl font-bold text-stone-900">
+                  {activeFlowerModal.name}{" "}
+                  <span className="text-emerald-800 text-sm font-semibold">
+                    ({activeFlowerModal.marathiName})
+                  </span>
+                </h3>
+              </div>
             </div>
 
-            <div className="mt-5">
-              <h3 className="font-serif text-3xl font-bold text-stone-900">
-                {activeFlowerModal.name}
-              </h3>
-              <p className="mt-1 text-xs font-semibold text-[#E8502B]">
-                {activeFlowerModal.subtitle}
-              </p>
-              <p className="mt-2 text-xs sm:text-sm text-stone-600 leading-relaxed">
+            <div className="mt-5 space-y-5">
+              <p className="text-xs leading-relaxed text-stone-600 bg-[#FAF7F2] p-3.5 rounded-2xl border border-stone-200/60">
                 {activeFlowerModal.botanicalNote}
               </p>
 
-              {/* Weight Pack Selector */}
-              <div className="mt-5">
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2">
-                  1. Choose Pack Weight:
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">
+                  Select Exact Weight (Grams Only):
                 </label>
-                <div className="grid grid-cols-1 gap-2">
-                  {activeFlowerModal.availableWeights.map((w, idx) => {
-                    const active = modalWeightIdx === idx;
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  {activeFlowerModal.availableWeights.map((wt, idx) => {
+                    const isSelected = modalWeightIdx === idx;
                     return (
                       <button
-                        key={w.label}
+                        key={wt.grams}
                         type="button"
-                        onClick={() => setModalWeightIdx(idx)}
-                        className={`flex items-center justify-between rounded-xl border px-4 py-3 text-xs font-bold transition cursor-pointer ${
-                          active
-                            ? "border-[#E8502B] bg-orange-50/70 text-stone-900"
-                            : "border-stone-200 bg-white text-stone-600 hover:border-stone-300"
+                        onClick={() => {
+                          setModalWeightIdx(idx);
+                          setCartError("");
+                        }}
+                        className={`rounded-2xl border p-3 text-center transition cursor-pointer ${
+                          isSelected
+                            ? "border-2 border-emerald-600 bg-emerald-50/70 shadow-2xs"
+                            : "border-stone-200 bg-white hover:border-emerald-400"
                         }`}
                       >
-                        <span>{w.label}</span>
-                        <span
-                          className={
-                            active ? "text-[#E8502B]" : "text-stone-900"
-                          }
-                        >
-                          ₹{w.price}
-                        </span>
+                        <p className="font-serif text-base font-bold text-stone-900">
+                          {wt.grams}g
+                        </p>
+                        <p className="mt-0.5 text-xs font-bold text-emerald-800">
+                          ₹{wt.price}
+                        </p>
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Quantity Counter */}
-              {(() => {
-                const selectedWeight =
-                  activeFlowerModal.availableWeights[modalWeightIdx] ||
-                  activeFlowerModal.availableWeights[0];
-                const itemTotal = selectedWeight.price * modalQty;
-                const directBuyUrl = `/checkout?type=ONE_TIME&flower=${encodeURIComponent(
-                  activeFlowerModal.name
-                )}&weight=${encodeURIComponent(
-                  selectedWeight.label
-                )}&qty=${modalQty}&price=${itemTotal}`;
+              {cartError && (
+                <div className="flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-bold text-rose-800">
+                  <AlertCircle className="h-4 w-4 shrink-0 text-rose-600 mt-0.5" />
+                  <span>{cartError}</span>
+                </div>
+              )}
 
-                return (
-                  <>
-                    <div className="mt-5 flex items-center justify-between rounded-2xl border border-stone-200 bg-[#FAF7F2] px-4 py-3">
-                      <div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
-                          2. Select Quantity
-                        </span>
-                        <span className="font-serif text-xl font-bold text-stone-900">
-                          Total: ₹{itemTotal}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setModalQty((q) => Math.max(1, q - 1))
-                          }
-                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-stone-300 bg-white text-stone-700 cursor-pointer"
-                        >
-                          <Minus className="h-3.5 w-3.5" />
-                        </button>
-                        <span className="w-6 text-center text-sm font-bold text-stone-900">
-                          {modalQty}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setModalQty((q) => q + 1)}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-stone-300 bg-white text-stone-700 cursor-pointer"
-                        >
-                          <Plus className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Modal Actions: Add to Cart OR Direct Buy Now */}
-                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleAddToCartFromModal(activeFlowerModal)
-                        }
-                        className="flex items-center justify-center gap-2 rounded-2xl border-2 border-[#071C15] bg-white py-3.5 text-xs font-bold text-[#071C15] hover:bg-stone-100 cursor-pointer"
-                      >
-                        <ShoppingBag className="h-4 w-4" />
-                        <span>Add to Cart</span>
-                      </button>
-
-                      <Link
-                        href={directBuyUrl}
-                        className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#E8502B] to-[#D97706] py-3.5 text-xs font-bold text-white shadow-lg shadow-orange-500/20"
-                      >
-                        <span>Buy Now • ₹{itemTotal}</span>
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    </div>
-                  </>
-                );
-              })()}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* SLIDE-OVER CART DRAWER (FOR MULTIPLE FLOWERS CHECKOUT) */}
-      {isCartOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-xs">
-          <div className="flex h-full w-full max-w-md flex-col justify-between bg-white p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-stone-200 pb-4">
-              <div className="flex items-center gap-2">
-                <ShoppingBag className="h-5 w-5 text-[#E8502B]" />
-                <h3 className="font-serif text-2xl font-bold text-stone-900">
-                  Your Flower Cart
-                </h3>
-              </div>
               <button
                 type="button"
-                onClick={() => setIsCartOpen(false)}
-                className="rounded-full bg-stone-100 p-2 text-stone-600 hover:bg-stone-200 cursor-pointer"
+                onClick={() => handleSelectWeightAndAddToCart(activeFlowerModal)}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 py-4 text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:brightness-105 cursor-pointer"
               >
-                <X className="h-4 w-4" />
+                <ShoppingBag className="h-4 w-4" />
+                <span>
+                  Confirm {activeFlowerModal.availableWeights[modalWeightIdx]?.grams}g Pack • ₹
+                  {activeFlowerModal.availableWeights[modalWeightIdx]?.price}
+                </span>
               </button>
             </div>
-
-            <div className="flex-1 overflow-y-auto py-4 space-y-4">
-              {cart.length === 0 ? (
-                <div className="py-16 text-center space-y-3">
-                  <p className="text-sm text-stone-500">
-                    Your flower basket is currently empty.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setIsCartOpen(false)}
-                    className="rounded-full bg-orange-50 px-5 py-2.5 text-xs font-bold text-[#E8502B]"
-                  >
-                    Browse Fresh Flowers
-                  </button>
-                </div>
-              ) : (
-                cart.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between gap-3 rounded-2xl border border-stone-200 p-3.5"
-                  >
-                    <img
-                      src={item.imageUrl}
-                      alt={item.flowerName}
-                      className="h-14 w-14 rounded-xl object-cover"
-                    />
-                    <div className="flex-1">
-                      <p className="font-serif text-base font-bold text-stone-900">
-                        {item.flowerName}
-                      </p>
-                      <p className="text-xs text-stone-500">
-                        {item.weightLabel} • ₹{item.unitPrice} each
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleUpdateCartQty(item.id, -1)}
-                        className="flex h-7 w-7 items-center justify-center rounded-lg border border-stone-300 text-stone-700 cursor-pointer"
-                      >
-                        {item.quantity === 1 ? (
-                          <Trash2 className="h-3 w-3 text-rose-600" />
-                        ) : (
-                          <Minus className="h-3 w-3" />
-                        )}
-                      </button>
-                      <span className="w-5 text-center text-xs font-bold">
-                        {item.quantity}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleUpdateCartQty(item.id, 1)}
-                        className="flex h-7 w-7 items-center justify-center rounded-lg border border-stone-300 text-stone-700 cursor-pointer"
-                      >
-                        <Plus className="h-3 w-3" />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {cart.length > 0 && (
-              <div className="border-t border-stone-200 pt-4 space-y-4">
-                <div className="flex items-baseline justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-stone-500">
-                    Total Amount
-                  </span>
-                  <span className="font-serif text-3xl font-bold text-stone-900">
-                    ₹{totalCartAmount}
-                  </span>
-                </div>
-                <Link
-                  href={`/checkout?type=ONE_TIME&fromCart=true&flower=${encodeURIComponent(
-                    cart
-                      .map(
-                        (i) =>
-                          `${i.quantity}x ${i.flowerName} (${i.weightLabel})`
-                      )
-                      .join(", ")
-                  )}&price=${totalCartAmount}`}
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#E8502B] to-[#D97706] py-4 text-sm font-bold text-white shadow-lg"
-                >
-                  <span>Proceed to Checkout</span>
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-            )}
           </div>
         </div>
       )}

@@ -13,6 +13,7 @@ import {
   X,
   Sparkles,
   ShieldCheck,
+  Leaf,
 } from "lucide-react";
 import {
   INITIAL_PLANS,
@@ -21,6 +22,7 @@ import {
   FlowerSelectionMode,
   getActiveFlowersCatalog,
 } from "../types";
+import { ScrollReveal } from "@/components/shared/ScrollReveal";
 
 interface PlanCustomizationState {
   mode: FlowerSelectionMode;
@@ -35,7 +37,6 @@ export function PlanCards({
   const [availableFlowers, setAvailableFlowers] = useState<FlowerProduct[]>([]);
   const [activeDetailPlan, setActiveDetailPlan] =
     useState<SubscriptionPlan | null>(null);
-
   const [customizations, setCustomizations] = useState<
     Record<string, PlanCustomizationState>
   >({
@@ -83,13 +84,11 @@ export function PlanCards({
         ? []
         : prev[planId]?.selectedFlowers || [];
       const exists = current.includes(flowerName);
-
       const updated = exists
         ? current.length > 1
           ? current.filter((f) => f !== flowerName)
           : current
         : [...current, flowerName];
-
       return {
         ...prev,
         [planId]: {
@@ -118,216 +117,213 @@ export function PlanCards({
 
   return (
     <section id="plans" className="py-24 px-4 sm:px-6 lg:px-8 mx-auto max-w-7xl">
-      {/* Header */}
-      <div className="mx-auto max-w-3xl text-center space-y-4">
-        <div className="inline-flex items-center gap-2 rounded-full border border-emerald-800/20 bg-[#071C15] px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-amber-300 shadow-xs">
-          <Flower2 className="h-3.5 w-3.5 text-[#F05A36]" />
-          <span>Sacred Morning Subscriptions</span>
+      <ScrollReveal>
+        {/* Header */}
+        <div className="mx-auto max-w-3xl text-center space-y-4">
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-800/20 bg-[#071C15] px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-amber-300 shadow-xs">
+            <Flower2 className="h-3.5 w-3.5 text-[#F05A36]" />
+            <span>Sacred Morning Subscriptions</span>
+          </div>
+          <h2 className="font-serif text-4xl sm:text-5xl font-bold tracking-tight text-stone-900">
+            Choose Your Daily Puja Plan
+          </h2>
+          <p className="text-sm sm:text-base text-stone-600 max-w-2xl mx-auto">
+            Delivered silently between{" "}
+            <strong className="text-emerald-950">5:00 AM – 8:00 AM</strong> across Thane (Pincodes 400601–400608). Click{" "}
+            <strong className="text-[#E8502B]">View Full Details</strong> to customize flowers or see complete benefits.
+          </p>
         </div>
-        <h2 className="font-serif text-4xl sm:text-5xl font-bold tracking-tight text-stone-900">
-          Choose Your Daily Puja Plan
-        </h2>
-        <p className="text-sm sm:text-base text-stone-600 max-w-2xl mx-auto">
-          Delivered silently between{" "}
-          <strong className="text-emerald-950">5:00 AM – 8:00 AM</strong>. Click{" "}
-          <strong className="text-[#E8502B]">View Full Details</strong> on any
-          plan to customize your flowers or see complete benefits.
-        </p>
-      </div>
+      </ScrollReveal>
 
       {/* 3 Minimal, Uncluttered Luxury Cards */}
       <div className="mt-16 grid grid-cols-1 gap-8 lg:grid-cols-3 lg:items-stretch">
-        {plans.map((plan) => {
+        {plans.map((plan, idx) => {
           const isPopular = plan.isPopular;
           const config = customizations[plan.id] || {
             mode: "MIXED",
             selectedFlowers: ["Marigold"],
           };
-
           return (
-            <div
-              key={plan.id}
-              className={`group relative flex flex-col overflow-hidden rounded-[2rem] transition-all duration-300 ${
-                isPopular
-                  ? "border-2 border-[#D97706] bg-[#071C15] text-white shadow-2xl shadow-emerald-950/25 lg:-translate-y-3"
-                  : "border border-stone-200/90 bg-white text-stone-900 shadow-lg shadow-stone-900/5 hover:border-emerald-700/40 hover:shadow-xl"
-              }`}
-            >
-              {isPopular && (
-                <div className="bg-gradient-to-r from-[#E8502B] via-[#D97706] to-[#E8502B] py-2.5 text-center text-[11px] font-bold uppercase tracking-[0.22em] text-white">
-                  ★ Most Loved • Best Monthly Value ★
-                </div>
-              )}
-
-              {/* Image Showcase */}
+            <ScrollReveal key={plan.id} delayMs={idx * 150}>
               <div
-                onClick={() => setActiveDetailPlan(plan)}
-                className="relative aspect-16/10 w-full overflow-hidden bg-stone-100 cursor-pointer"
+                className={`group relative flex flex-col h-full overflow-hidden rounded-[2rem] transition-all duration-300 ${
+                  isPopular
+                    ? "border-2 border-[#D97706] bg-[#071C15] text-white shadow-2xl shadow-emerald-950/25 lg:-translate-y-3"
+                    : "border border-stone-200/90 bg-white text-stone-900 shadow-lg shadow-stone-900/5 hover:border-emerald-700/40 hover:shadow-xl"
+                }`}
               >
-                <img
-                  src={plan.imageUrl}
-                  alt={plan.title}
-                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#071C15] via-black/20 to-transparent" />
-
-                {plan.badge && !isPopular && (
-                  <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3.5 py-1 text-[11px] font-bold text-emerald-950 shadow-sm backdrop-blur-md">
-                    {plan.badge}
-                  </span>
+                {isPopular && (
+                  <div className="bg-gradient-to-r from-[#E8502B] via-[#D97706] to-[#E8502B] py-2.5 text-center text-[11px] font-bold uppercase tracking-[0.22em] text-white">
+                    ★ Most Loved • Best Monthly Value ★
+                  </div>
                 )}
 
-                <div className="absolute bottom-3.5 left-4 right-4 flex items-center justify-between text-white">
-                  <div className="flex items-center gap-1.5 rounded-full bg-black/55 backdrop-blur-md px-3 py-1 text-[11px] font-semibold border border-white/20">
-                    <Scale className="h-3 w-3 text-amber-300" />
-                    <span>{plan.pouchWeight}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 rounded-full bg-emerald-950/85 backdrop-blur-md px-3 py-1 text-[11px] font-semibold text-emerald-200 border border-emerald-400/30">
-                    <Clock className="h-3 w-3 text-emerald-400" />
-                    <span>5:00 – 8:00 AM</span>
+                {/* Image Showcase */}
+                <div
+                  onClick={() => setActiveDetailPlan(plan)}
+                  className="relative aspect-16/10 w-full overflow-hidden bg-stone-100 cursor-pointer"
+                >
+                  <img
+                    src={plan.imageUrl}
+                    alt={plan.title}
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#071C15] via-black/20 to-transparent" />
+                  {plan.badge && !isPopular && (
+                    <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3.5 py-1 text-[11px] font-bold text-emerald-950 shadow-sm backdrop-blur-md">
+                      {plan.badge}
+                    </span>
+                  )}
+                  <div className="absolute bottom-3.5 left-4 right-4 flex items-center justify-between text-white">
+                    <div className="flex items-center gap-1.5 rounded-full bg-black/55 backdrop-blur-md px-3 py-1 text-[11px] font-semibold border border-white/20">
+                      <Scale className="h-3 w-3 text-amber-300" />
+                      <span>{plan.pouchWeight}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 rounded-full bg-emerald-950/85 backdrop-blur-md px-3 py-1 text-[11px] font-semibold text-emerald-200 border border-emerald-400/30">
+                      <Clock className="h-3 w-3 text-emerald-400" />
+                      <span>5:00 – 8:00 AM</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Minimal Card Body (Only Essential Info) */}
-              <div className="flex flex-1 flex-col justify-between p-6 sm:p-7">
-                <div>
-                  <h3
-                    className={`font-serif text-2xl font-bold ${
-                      isPopular ? "text-amber-50" : "text-stone-900"
-                    }`}
-                  >
-                    {plan.title}
-                  </h3>
-                  <p
-                    className={`mt-1 text-xs leading-relaxed ${
-                      isPopular ? "text-emerald-100/80" : "text-stone-500"
-                    }`}
-                  >
-                    {plan.subtitle}
-                  </p>
+                {/* Minimal Card Body */}
+                <div className="flex flex-1 flex-col justify-between p-6 sm:p-7">
+                  <div>
+                    <h3
+                      className={`font-serif text-2xl font-bold ${
+                        isPopular ? "text-amber-50" : "text-stone-900"
+                      }`}
+                    >
+                      {plan.title}
+                    </h3>
+                    <p
+                      className={`mt-1 text-xs leading-relaxed ${
+                        isPopular ? "text-emerald-100/80" : "text-stone-500"
+                      }`}
+                    >
+                      {plan.subtitle}
+                    </p>
 
-                  {/* Compact Price Box */}
-                  <div
-                    className={`mt-5 rounded-2xl border p-4 flex items-center justify-between ${
-                      isPopular
-                        ? "border-emerald-800/80 bg-[#0B291F]"
-                        : "border-stone-200/80 bg-[#FAF7F2]"
-                    }`}
-                  >
-                    <div>
-                      <span
-                        className={`text-[10px] font-bold uppercase tracking-widest block ${
-                          isPopular ? "text-emerald-300/80" : "text-stone-400"
-                        }`}
-                      >
-                        Prepaid Plan
-                      </span>
-                      <div className="flex items-baseline gap-1.5 mt-0.5">
+                    {/* Compact Price Box */}
+                    <div
+                      className={`mt-5 rounded-2xl border p-4 flex items-center justify-between ${
+                        isPopular
+                          ? "border-emerald-800/80 bg-[#0B291F]"
+                          : "border-stone-200/80 bg-[#FAF7F2]"
+                      }`}
+                    >
+                      <div>
                         <span
-                          className={`font-serif text-3xl sm:text-4xl font-bold ${
-                            isPopular ? "text-white" : "text-stone-900"
+                          className={`text-[10px] font-bold uppercase tracking-widest block ${
+                            isPopular ? "text-emerald-300/80" : "text-stone-400"
                           }`}
                         >
-                          ₹{plan.price.toLocaleString("en-IN")}
+                          Prepaid Plan
                         </span>
-                        <span
-                          className={`text-xs font-semibold ${
-                            isPopular ? "text-emerald-200/70" : "text-stone-500"
+                        <div className="flex items-baseline gap-1.5 mt-0.5">
+                          <span
+                            className={`font-serif text-3xl sm:text-4xl font-bold ${
+                              isPopular ? "text-white" : "text-stone-900"
+                            }`}
+                          >
+                            ₹{plan.price.toLocaleString("en-IN")}
+                          </span>
+                          <span
+                            className={`text-xs font-semibold ${
+                              isPopular ? "text-emerald-200/70" : "text-stone-500"
+                            }`}
+                          >
+                            / {plan.billingCycle}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="inline-block rounded-lg bg-[#E8502B] px-2.5 py-1 text-xs font-bold text-white">
+                          ₹{plan.perDayEffectivePrice} / morning
+                        </span>
+                        <p
+                          className={`mt-1 text-[11px] font-semibold ${
+                            isPopular ? "text-amber-200" : "text-emerald-900"
                           }`}
                         >
-                          / {plan.billingCycle}
-                        </span>
+                          {plan.deliveriesCount}{" "}
+                          {plan.deliveriesCount === 1
+                            ? "Morning Drop"
+                            : "Morning Drops"}
+                        </p>
                       </div>
                     </div>
 
-                    <div className="text-right">
-                      <span className="inline-block rounded-lg bg-[#E8502B] px-2.5 py-1 text-xs font-bold text-white">
-                        ₹{plan.perDayEffectivePrice} / morning
+                    {/* Current Mode Pill */}
+                    <div className="mt-4 flex items-center justify-between text-xs">
+                      <span
+                        className={
+                          isPopular ? "text-emerald-200/80" : "text-stone-500"
+                        }
+                      >
+                        Flower Selection:
                       </span>
-                      <p
-                        className={`mt-1 text-[11px] font-semibold ${
-                          isPopular ? "text-amber-200" : "text-emerald-900"
+                      <span
+                        className={`font-bold ${
+                          isPopular ? "text-amber-300" : "text-emerald-900"
                         }`}
                       >
-                        {plan.deliveriesCount}{" "}
-                        {plan.deliveriesCount === 1
-                          ? "Morning Drop"
-                          : "Morning Drops"}
-                      </p>
+                        {config.mode === "MIXED"
+                          ? "Mixed Sacred Box"
+                          : `Custom (${config.selectedFlowers.join(", ")})`}
+                      </span>
                     </div>
-                  </div>
 
-                  {/* Current Mode Pill */}
-                  <div className="mt-4 flex items-center justify-between text-xs">
-                    <span
-                      className={
-                        isPopular ? "text-emerald-200/80" : "text-stone-500"
-                      }
-                    >
-                      Flower Selection:
-                    </span>
-                    <span
-                      className={`font-bold ${
-                        isPopular ? "text-amber-300" : "text-emerald-900"
+                    {/* Short Highlights */}
+                    <ul
+                      className={`mt-4 space-y-2 border-t pt-4 text-xs ${
+                        isPopular
+                          ? "border-emerald-800/80 text-emerald-100"
+                          : "border-stone-100 text-stone-700"
                       }`}
                     >
-                      {config.mode === "MIXED"
-                        ? "Mixed Sacred Box"
-                        : `Custom (${config.selectedFlowers.join(", ")})`}
-                    </span>
+                      {plan.shortHighlights.map((item) => (
+                        <li key={item} className="flex items-center gap-2">
+                          <Check
+                            className={`h-3.5 w-3.5 shrink-0 ${
+                              isPopular ? "text-amber-300" : "text-emerald-700"
+                            }`}
+                          />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
 
-                  {/* Short 2-Line Highlights Only */}
-                  <ul
-                    className={`mt-4 space-y-2 border-t pt-4 text-xs ${
-                      isPopular
-                        ? "border-emerald-800/80 text-emerald-100"
-                        : "border-stone-100 text-stone-700"
-                    }`}
-                  >
-                    {plan.shortHighlights.map((item) => (
-                      <li key={item} className="flex items-center gap-2">
-                        <Check
-                          className={`h-3.5 w-3.5 shrink-0 ${
-                            isPopular ? "text-amber-300" : "text-emerald-700"
-                          }`}
-                        />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Action Buttons: 1. View Full Details (Above) + 2. Subscribe (Below) */}
-                <div className="mt-7 space-y-2.5 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setActiveDetailPlan(plan)}
-                    className={`flex w-full items-center justify-center gap-2 rounded-2xl border py-3 text-xs font-bold transition cursor-pointer ${
-                      isPopular
-                        ? "border-emerald-700 bg-emerald-950/70 text-amber-200 hover:bg-emerald-900"
-                        : "border-stone-300 bg-[#FAF7F2] text-stone-800 hover:border-[#E8502B] hover:text-[#E8502B]"
-                    }`}
-                  >
-                    <Eye className="h-3.5 w-3.5" />
-                    <span>View Full Details & Customize Flowers</span>
-                  </button>
-
-                  <Link
-                    href={buildCheckoutUrl(plan)}
-                    className={`flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-sm font-bold transition ${
-                      isPopular
-                        ? "bg-gradient-to-r from-[#E8502B] via-[#F05A36] to-[#D97706] text-white shadow-lg shadow-orange-500/30 hover:brightness-110"
-                        : "bg-[#071C15] text-white hover:bg-[#E8502B]"
-                    }`}
-                  >
-                    <span>Subscribe to {plan.title}</span>
-                    <ArrowUpRight className="h-4 w-4" />
-                  </Link>
+                  {/* Action Buttons */}
+                  <div className="mt-7 space-y-2.5 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setActiveDetailPlan(plan)}
+                      className={`flex w-full items-center justify-center gap-2 rounded-2xl border py-3 text-xs font-bold transition cursor-pointer ${
+                        isPopular
+                          ? "border-emerald-700 bg-emerald-950/70 text-amber-200 hover:bg-emerald-900"
+                          : "border-stone-300 bg-[#FAF7F2] text-stone-800 hover:border-[#E8502B] hover:text-[#E8502B]"
+                      }`}
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      <span>View Full Details & Customize Flowers</span>
+                    </button>
+                    <Link
+                      href={buildCheckoutUrl(plan)}
+                      className={`flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-sm font-bold transition ${
+                        isPopular
+                          ? "bg-gradient-to-r from-[#E8502B] via-[#F05A36] to-[#D97706] text-white shadow-lg shadow-orange-500/30 hover:brightness-110"
+                          : "bg-[#071C15] text-white hover:bg-[#E8502B]"
+                      }`}
+                    >
+                      <span>Subscribe to {plan.title}</span>
+                      <ArrowUpRight className="h-4 w-4" />
+                    </Link>
+                  </div>
                 </div>
               </div>
-            </div>
+            </ScrollReveal>
           );
         })}
       </div>
@@ -343,7 +339,6 @@ export function PlanCards({
             >
               <X className="h-4 w-4" />
             </button>
-
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 border-b border-stone-100 pb-5">
               <img
                 src={activeDetailPlan.imageUrl}
@@ -412,10 +407,10 @@ export function PlanCards({
                       </div>
                     </label>
 
-                    {/* Checkboxes 2: Separate Flowers */}
+                    {/* Checkboxes 2: Separate Flowers with Marathi Names */}
                     <div className="space-y-2">
                       <p className="text-[11px] font-bold uppercase tracking-wider text-stone-500">
-                        OR Tick Specific Separate Flowers:
+                        OR Tick Specific Separate Flowers (English + Marathi):
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                         {availableFlowers.map((flw) => {
@@ -448,7 +443,12 @@ export function PlanCards({
                                   <Check className="h-3 w-3 stroke-[3]" />
                                 )}
                               </span>
-                              <span>{flw.name}</span>
+                              <div>
+                                <span>{flw.name}</span>
+                                <span className="block text-[10px] text-stone-500 font-normal">
+                                  ({flw.marathiName})
+                                </span>
+                              </div>
                             </label>
                           );
                         })}

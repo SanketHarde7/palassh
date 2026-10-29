@@ -19,17 +19,17 @@ export function Footer() {
 
       <div className="relative mx-auto max-w-7xl px-4 pt-16 pb-10 sm:px-6 lg:px-8">
         {/* Top Luxury Floating CTA Banner */}
-        <div className="relative z-10 mb-16 rounded-[2rem] border border-white/10 bg-gradient-to-r from-[#E8502B] via-[#D94824] to-[#065F46] p-8 sm:p-10 shadow-2xl">
+        <div className="relative z-10 mb-16 rounded-[2rem] border border-white/15 bg-gradient-to-r from-[#E8502B] via-[#D94824] to-[#065F46] p-8 sm:p-10 shadow-2xl">
           <div className="flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
             <div className="space-y-2 max-w-xl">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-black/25 px-3.5 py-1 text-[11px] font-bold uppercase tracking-widest text-amber-200">
-                <Sparkles className="h-3.5 w-3.5" /> Start Tomorrow Morning
+                <Sparkles className="h-3.5 w-3.5" /> ॥ जय जय रघुवीर समर्थ ॥
               </span>
               <h3 className="font-serif text-2xl sm:text-4xl font-bold text-white">
                 Bring Divine Fragrance to Your 6 AM Puja.
               </h3>
               <p className="text-xs sm:text-sm text-orange-50/90">
-                Join 500+ devoted households across Thane West, Ghodbunder, Mulund & Mumbai.
+                Join 500+ devoted households across Thane pincodes 400601 to 400608.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
@@ -37,29 +37,34 @@ export function Footer() {
                 href="/#plans"
                 className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-4 text-xs sm:text-sm font-bold text-stone-900 shadow-lg transition hover:bg-amber-50"
               >
-                <span>Subscribe from ₹76/day</span>
+                <span>Subscribe from ₹49/day</span>
                 <ArrowUpRight className="h-4 w-4 text-[#E8502B]" />
               </Link>
               <Link
-                href="/#pincode-check"
-                className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-black/20 px-6 py-4 text-xs sm:text-sm font-bold text-white backdrop-blur-xs hover:bg-black/30"
+                href="/products"
+                className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-black/25 px-6 py-4 text-xs sm:text-sm font-bold text-white backdrop-blur-xs hover:bg-black/40"
               >
-                <span>Verify Pincode</span>
+                <span>Browse All Flowers</span>
               </Link>
             </div>
           </div>
         </div>
 
-        {/* Main 4-Column Wrapper WITH Glowing Giant PALASSH Behind It */}
+        {/* Main 4-Column Wrapper WITH High-Luminance Glowing PALASSH Behind It */}
         <div className="relative">
-          {/* BACKGROUND GLOWING WATERMARK BEHIND THE 4 COLUMNS */}
+          {/* RADIANT GLOWING WATERMARK BEHIND THE 4 COLUMNS (Point #7) */}
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center select-none overflow-hidden"
           >
-            {/* Soft Ambient Saffron-Emerald Backlight */}
-            <div className="absolute h-44 w-3/4 rounded-full bg-gradient-to-r from-[#E8502B]/15 via-amber-400/10 to-emerald-500/15 blur-3xl" />
-            <p className="font-serif text-[13.5vw] leading-none font-bold tracking-[0.18em] bg-gradient-to-b from-amber-200/[0.11] via-orange-300/[0.06] to-emerald-400/[0.02] bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(232,80,43,0.18)]">
+            {/* Dual Intense Saffron-Gold & Emerald Aura Backlights */}
+            <div className="absolute h-52 w-4/5 rounded-full bg-gradient-to-r from-[#E8502B]/30 via-amber-400/25 to-emerald-400/25 blur-3xl" />
+            <p
+              style={{
+                WebkitTextStroke: "1px rgba(251, 191, 36, 0.22)",
+              }}
+              className="font-serif text-[13.5vw] leading-none font-bold tracking-[0.18em] bg-gradient-to-b from-amber-300/30 via-[#F05A36]/20 to-emerald-300/10 bg-clip-text text-transparent drop-shadow-[0_0_55px_rgba(245,158,11,0.45)]"
+            >
               PALASSH
             </p>
           </div>
@@ -80,14 +85,14 @@ export function Footer() {
                   <span className="font-serif text-2xl font-bold tracking-[0.15em] text-white block leading-none">
                     PALASSH
                   </span>
-                  <span className="text-[11px] italic text-amber-300/90">
-                    “Flowers that pray with you”
+                  <span className="text-[11px] italic text-amber-300/90 font-serif">
+                    flowers that pray with you
                   </span>
                 </div>
               </div>
 
-              <p className="text-sm leading-relaxed text-emerald-100/75 max-w-sm">
-                Farm-fresh Marigold, Mogra, Hibiscus, Lotus & sacred Tulsi plucked at midnight and delivered silently to your doorstep every morning across Thane & Mumbai.
+              <p className="text-sm leading-relaxed text-emerald-100/80 max-w-sm">
+                Farm-fresh Marigold (झेंडू), Chrysanthemum (शेवंती), Red Hibiscus (लाल जास्वंद) & sacred Tulsi plucked at midnight and delivered silently across Thane (400601–400608).
               </p>
 
               <div className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-950/70 px-3.5 py-2 text-xs text-emerald-300 backdrop-blur-xs">
@@ -104,80 +109,82 @@ export function Footer() {
               <ul className="space-y-3 text-sm text-emerald-100/85">
                 <li>
                   <Link
-                    href="/checkout?plan=daily-puja-pack"
-                    className="hover:text-white transition flex items-center justify-between max-w-[220px]"
+                    href="/checkout?plan=one-day-puja-pack"
+                    className="hover:text-white transition flex items-center justify-between max-w-[230px]"
                   >
-                    <span>Daily Puja Pack</span>
-                    <span className="text-xs font-bold text-amber-300">₹76/day</span>
+                    <span>One Day Puja Pack</span>
+                    <span className="text-xs font-bold text-amber-300">₹49/day</span>
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/checkout?plan=weekly-devotion-pack"
-                    className="hover:text-white transition flex items-center justify-between max-w-[220px]"
+                    className="hover:text-white transition flex items-center justify-between max-w-[230px]"
                   >
                     <span>Weekly Devotion Pack</span>
-                    <span className="text-xs font-bold text-amber-300">₹510/wk</span>
+                    <span className="text-xs font-bold text-amber-300">₹329/wk</span>
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="/checkout?plan=monthly-sacred-pack"
-                    className="hover:text-white transition flex items-center justify-between max-w-[220px]"
+                    href="/checkout?plan=monthly-sacred-assortment"
+                    className="hover:text-white transition flex items-center justify-between max-w-[230px]"
                   >
                     <span>Monthly Sacred Pack</span>
-                    <span className="text-xs font-bold text-amber-300">₹2,100/mo</span>
+                    <span className="text-xs font-bold text-amber-300">₹1,350/mo</span>
                   </Link>
                 </li>
                 <li className="pt-1">
                   <Link
-                    href="/my-orders"
-                    className="inline-flex items-center gap-1.5 text-emerald-300 font-semibold hover:text-white"
+                    href="/products"
+                    className="inline-flex items-center gap-1.5 text-amber-300 font-semibold hover:text-white"
                   >
-                    <span>⏸️ Pause / Manage My Orders</span>
+                    <span>🌺 View All Flowers (/products)</span>
                   </Link>
                 </li>
               </ul>
             </div>
 
-            {/* Col 3: Policies & Legal */}
+            {/* Col 3: Quick Links & Legal */}
             <div className="lg:col-span-2 space-y-4">
               <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-amber-400">
-                Policies & Legal
+                Explore & Legal
               </h4>
               <ul className="space-y-3 text-sm text-emerald-100/85">
                 <li>
+                  <Link href="/about" className="hover:text-white transition">
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/account" className="hover:text-white transition">
+                    My Account
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/my-orders" className="hover:text-white transition">
+                    My Orders & Pause
+                  </Link>
+                </li>
+                <li>
                   <Link href="/legal/privacy-policy" className="hover:text-white transition">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/legal/terms-and-conditions" className="hover:text-white transition">
-                    Terms & Conditions
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/legal/refund-policy" className="hover:text-white transition">
-                    Refund & Cancellation
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/legal/shipping-policy" className="hover:text-white transition">
-                    Morning Delivery Policy
+                    Privacy & Terms
                   </Link>
                 </li>
               </ul>
             </div>
 
-            {/* Col 4: Thane & Mumbai Hub */}
+            {/* Col 4: Thane Dispatch Hub */}
             <div className="lg:col-span-3 space-y-4">
               <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-amber-400">
-                Thane & Mumbai Hub
+                Thane Dispatch Hub
               </h4>
               <ul className="space-y-3.5 text-sm text-emerald-100/85">
                 <li className="flex items-start gap-3">
                   <MapPin className="h-4 w-4 shrink-0 text-[#F05A36] mt-1" />
-                  <span>Thane West, Ghodbunder, Majiwada, Mulund, Bhandup, Powai & Suburbs</span>
+                  <span>
+                    6X4X+HJ5 Glenmark Residency, 60 Feet Rd, Kharegaon, Kalwa, Thane - 400605 (Serving 400601–400608)
+                  </span>
                 </li>
                 <li className="flex items-center gap-3">
                   <Clock className="h-4 w-4 shrink-0 text-emerald-400" />

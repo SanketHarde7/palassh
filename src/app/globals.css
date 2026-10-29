@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: var(--font-serif), Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-sans: var(--font-sans), system-ui, -apple-system, sans-serif;
+}
+
+:root {
+  --background: #FAF7F2;       /* Royal Warm Ivory */
+  --surface: #FFFFFF;
+  --primary: #E8502B;          /* PALASSH Vermilion Orange */
+  --primary-dark: #B83718;     /* Deep Terracotta */
+  --gold-accent: #D97706;      /* Temple Brass Gold */
+  --text-main: #1C1613;        /* Deep Espresso Charcoal */
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+}
+
+/* Subtle Sacred Dot Pattern for Luxury Depth */
+.bg-sacred-pattern {
+  background-image: radial-gradient(#e8502b18 1px, transparent 1px);
+  background-size: 24px 24px;
+}

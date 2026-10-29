@@ -3,11 +3,11 @@
 import React from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Sparkles, RotateCcw } from "lucide-react";
-import { logger } from "@/lib/logger";
+import { logger, type LogModule } from "@/lib/logger";
 
 interface Props {
   children: React.ReactNode;
-  featureName: "LAYOUT" | "HERO" | "PINCODE" | "CATALOG" | "CHECKOUT" | "ORDERS" | "ADMIN";
+  featureName: LogModule;
 }
 
 export function FeatureBoundary({ children, featureName }: Props) {
@@ -29,7 +29,7 @@ export function FeatureBoundary({ children, featureName }: Props) {
             <Sparkles className="h-4 w-4" />
           </div>
           <p className="text-sm font-medium text-stone-800">
-            Refreshing the {featureName.toLowerCase()} section...
+            Refreshing the {featureName.toLowerCase().replace(/_/g, " ")} section...
           </p>
           <button
             onClick={resetErrorBoundary}

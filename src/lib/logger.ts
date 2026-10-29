@@ -1,7 +1,20 @@
 type LogLevel = "INFO" | "WARN" | "ERROR";
 
+export type LogModule =
+  | "LAYOUT"
+  | "HERO"
+  | "PINCODE"
+  | "CATALOG"
+  | "CHECKOUT"
+  | "ORDERS"
+  | "ADMIN"
+  | "ADMIN_LOGIN"
+  | "ADMIN_DASHBOARD"
+  | "ALL_PRODUCTS"
+  | "DIRECT_FLOWER_STORE";
+
 interface LogPayload {
-  module: "LAYOUT" | "HERO" | "PINCODE" | "CATALOG" | "CHECKOUT" | "ORDERS" | "ADMIN";
+  module: LogModule;
   action: string;
   message: string;
   meta?: Record<string, unknown>;

@@ -4,7 +4,6 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  MapPin,
   Calendar,
   Clock,
   ShieldCheck,
@@ -13,6 +12,7 @@ import {
   ArrowLeft,
   Lock,
   Sparkles,
+  Mail,
 } from "lucide-react";
 import {
   INITIAL_PLANS,
@@ -42,16 +42,23 @@ function CheckoutContent() {
   );
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
-  // Point #1: Strictly EMPTY initial state so values appear ONLY as placeholders (not pre-filled text)
+  // Strictly Empty Initial State (Clean Placeholders Only)
   const [formData, setFormData] = useState({
     fullName: "",
     phone: "",
+    email: "",
     pincode: "",
     flatWing: "",
     societyName: "",
     startDate: getTomorrowDateString(),
     deliveryNote: "",
   });
+
+  // Frontend Email + Phone Verification State
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [otpNotice, setOtpNotice] = useState("");
 
   const [pincodeStatus, setPincodeStatus] = useState<{
     checked: boolean;
@@ -84,6 +91,36 @@ function CheckoutContent() {
     }
   };
 
+  const handleSendEmailVerification = () => {
+    setFormError("");
+    if (
+      !formData.email.includes("@") ||
+      formData.phone.replace(/\D/g, "").length !== 10
+    ) {
+      setFormError(
+        "Please enter a valid 10-digit WhatsApp number and Email address first to receive your verification code."
+      );
+      return;
+    }
+    setOtpSent(true);
+    setOtpNotice(
+      `Verification code sent to ${formData.email} (Links with +91 ${formData.phone}).`
+    );
+  };
+
+  const handleVerifyEmailCode = () => {
+    if (otpCode.trim().length < 4) {
+      setFormError("Please enter the verification code sent to your email.");
+      return;
+    }
+    setIsEmailVerified(true);
+    setOtpSent(false);
+    setFormError("");
+    setOtpNotice(
+      `Verified! ${formData.email} is now linked with +91 ${formData.phone}.`
+    );
+  };
+
   const totalCartGrams = cartItems.reduce(
     (acc, i) => acc + (i.grams || 100),
     0
@@ -94,9 +131,20 @@ function CheckoutContent() {
     e.preventDefault();
     setFormError("");
 
-    if (!formData.fullName.trim() || formData.phone.length < 10) {
+    if (
+      !formData.fullName.trim() ||
+      formData.phone.length < 10 ||
+      !formData.email.includes("@")
+    ) {
       setFormError(
-        "Please enter your full name and a valid 10-digit WhatsApp mobile number."
+        "Please enter your Full Name, 10-digit WhatsApp Number, and Email Address."
+      );
+      return;
+    }
+
+    if (!isEmailVerified) {
+      setFormError(
+        "Please verify your Email & Phone number using the 'Send Code' button before completing checkout."
       );
       return;
     }
@@ -116,7 +164,6 @@ function CheckoutContent() {
       return;
     }
 
-    // Check Festive & Weight Rules if One-Time Checkout
     if (isOneTimeCartCheckout) {
       const festive = getFestiveModeStatus(formData.startDate);
       const tier = getCurrentCustomerTier();
@@ -154,6 +201,7 @@ function CheckoutContent() {
           deliveryDate: formData.startDate,
           deliverySlot: "6:00 AM – 8:00 AM",
           customerName: formData.fullName.trim(),
+          email: formData.email.trim(),
           phone: formData.phone.trim(),
           address: `${formData.flatWing.trim()}, ${formData.societyName.trim()} - ${
             formData.pincode
@@ -179,7 +227,9 @@ function CheckoutContent() {
         return;
       }
 
-      // Subscription Order Creation
+      const isWeekly = selectedPlan.billingCycle === "week";
+      const isOneDay = selectedPlan.billingCycle === "day";
+
       const newSubOrder = {
         orderId: `PLS-SUB-${Math.floor(100000 + Math.random() * 900000)}`,
         planId: selectedPlan.id,
@@ -188,14 +238,15 @@ function CheckoutContent() {
         billingCycle: selectedPlan.billingCycle,
         totalDeliveries: selectedPlan.deliveriesCount,
         remainingDeliveries: selectedPlan.deliveriesCount,
+        maxPausesAllowed: isOneDay ? 0 : isWeekly ? 2 : 5,
+        pausesUsedCount: 0,
         status: "ACTIVE" as const,
         startDate: formData.startDate,
-        nextDeliveryDate: `${formData.startDate} (6:00 AM – 8:00 AM)`,
         deliverySlot: "6:00 AM – 8:00 AM",
         defaultFlowers:
-          customFlowersParam ||
-          "Mixed Sacred Box (Marigold, Chrysanthemum & Red Hibiscus)",
+          customFlowersParam || selectedPlan.mixedPredefinedBreakdown,
         customerName: formData.fullName.trim(),
+        email: formData.email.trim(),
         phone: formData.phone.trim(),
         address: `${formData.flatWing.trim()}, ${formData.societyName.trim()} - ${
           formData.pincode
@@ -214,11 +265,11 @@ function CheckoutContent() {
       }
 
       router.push("/my-orders?tab=subscription");
-    }, 800);
+    }, 700);
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#FAF7F2] py-10 sm:py-12 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <Link
           href={isOneTimeCartCheckout ? "/products" : "/#plans"}
@@ -235,81 +286,42 @@ function CheckoutContent() {
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
           {/* LEFT COLUMN: Form */}
           <div className="lg:col-span-7">
-            <div className="rounded-[2.2rem] border border-stone-200/90 bg-white p-6 sm:p-10 shadow-xl space-y-6">
+            <div className="rounded-3xl sm:rounded-[2.2rem] border border-stone-200/90 bg-white p-5 sm:p-10 shadow-xl space-y-6">
               <div className="border-b border-stone-100 pb-5">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-[#071C15] px-3.5 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-300">
                   <Sparkles className="h-3 w-3 text-[#F05A36]" />
                   <span>
                     {isOneTimeCartCheckout
-                      ? "One-Time Fresh Flower Checkout"
+                      ? "Direct Flower Checkout"
                       : "Sacred Subscription Checkout"}
                   </span>
                 </span>
-                <h1 className="mt-3 font-serif text-3xl sm:text-4xl font-bold text-stone-900">
+                <h1 className="mt-3 font-serif text-2xl sm:text-4xl font-bold text-stone-900">
                   Confirm Your Morning Flower Basket
                 </h1>
               </div>
 
-              {/* Single Guaranteed Morning Slot (6:00 AM – 8:00 AM as requested by Client) */}
-              <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-400 mb-2">
-                  Morning Silent Delivery Window (Single Guaranteed Slot)
-                </label>
-                <div className="flex items-center justify-between rounded-2xl border-2 border-emerald-700 bg-emerald-50/70 p-4 text-emerald-950">
-                  <div className="flex items-center gap-3">
-                    <Clock className="h-5 w-5 text-emerald-700 shrink-0" />
-                    <div>
-                      <p className="text-sm font-bold">
-                        6:00 AM – 8:00 AM (Morning Puja Window)
-                      </p>
-                      <p className="text-xs text-emerald-800">
-                        Silent doorbell-free drop across Thane 400601 – 400608
-                      </p>
-                    </div>
+              {/* Single Guaranteed Slot: 6:00 AM – 8:00 AM */}
+              <div className="flex items-center justify-between rounded-2xl border-2 border-emerald-700 bg-emerald-50/70 p-4 text-emerald-950">
+                <div className="flex items-center gap-3">
+                  <Clock className="h-5 w-5 text-emerald-700 shrink-0" />
+                  <div>
+                    <p className="text-xs sm:text-sm font-bold">
+                      6:00 AM – 8:00 AM (Morning Puja Window)
+                    </p>
+                    <p className="text-[11px] text-emerald-800">
+                      Silent doorbell-free drop across Thane 400601 – 400608
+                    </p>
                   </div>
-                  <span className="rounded-full bg-emerald-800 px-3 py-1 text-[10px] font-bold uppercase text-amber-200">
-                    Locked Slot
-                  </span>
                 </div>
+                <span className="rounded-full bg-emerald-800 px-3 py-1 text-[10px] font-bold uppercase text-amber-200 shrink-0">
+                  6–8 AM Slot
+                </span>
               </div>
 
-              {/* Switch Plan Pills if Subscription Checkout */}
-              {!isOneTimeCartCheckout && (
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-400 mb-2">
-                    Select Subscription Tier
-                  </label>
-                  <div className="grid grid-cols-3 gap-2.5">
-                    {INITIAL_PLANS.map((plan) => {
-                      const active = selectedPlan.id === plan.id;
-                      return (
-                        <button
-                          key={plan.id}
-                          type="button"
-                          onClick={() => setSelectedPlan(plan)}
-                          className={`rounded-2xl border p-3 text-left transition cursor-pointer ${
-                            active
-                              ? "border-2 border-[#E8502B] bg-orange-50/60"
-                              : "border-stone-200 bg-white hover:border-orange-200"
-                          }`}
-                        >
-                          <p className="text-xs font-bold text-stone-900 truncate">
-                            {plan.title}
-                          </p>
-                          <p className="mt-0.5 font-serif text-lg font-bold text-[#E8502B]">
-                            ₹{plan.price}
-                          </p>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Society & Doorstep Details Form (With Clean Placeholders, NOT Auto-Filled) */}
-              <form onSubmit={handleCheckoutSubmit} className="space-y-5 pt-2">
+              <form onSubmit={handleCheckoutSubmit} className="space-y-5 pt-1">
                 <h2 className="font-serif text-xl font-bold text-stone-900">
-                  Society & Doorstep Details
+                  Devotee Contact & Email Verification
                 </h2>
 
                 {formError && (
@@ -344,17 +356,87 @@ function CheckoutContent() {
                       required
                       maxLength={10}
                       value={formData.phone}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setFormData({
                           ...formData,
                           phone: e.target.value.replace(/\D/g, ""),
-                        })
-                      }
+                        });
+                        setIsEmailVerified(false);
+                      }}
                       placeholder="e.g. 9820123456"
                       className="w-full rounded-xl border border-stone-300 bg-white px-3.5 py-3 text-sm text-stone-900 placeholder:text-stone-400 focus:border-[#E8502B] focus:outline-none"
                     />
                   </div>
                 </div>
+
+                {/* Email Input + OTP Link Verification */}
+                <div className="rounded-2xl border border-orange-200/80 bg-[#FAF7F2] p-4 space-y-3">
+                  <label className="block text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                    <Mail className="h-3.5 w-3.5 text-[#E8502B]" />
+                    <span>
+                      Email Address (For Account Linking & Multi-Device OTP) *
+                    </span>
+                  </label>
+                  <div className="flex flex-col sm:flex-row gap-2.5">
+                    <input
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => {
+                        setFormData({ ...formData, email: e.target.value });
+                        setIsEmailVerified(false);
+                      }}
+                      placeholder="e.g. snehal@gmail.com"
+                      className="flex-1 rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-[#E8502B] focus:outline-none"
+                    />
+                    {isEmailVerified ? (
+                      <span className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-100 border border-emerald-300 px-4 py-2.5 text-xs font-bold text-emerald-900 shrink-0">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                        Verified & Linked
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleSendEmailVerification}
+                        className="rounded-xl bg-[#071C15] px-4 py-2.5 text-xs font-bold text-amber-300 hover:bg-emerald-950 cursor-pointer shrink-0"
+                      >
+                        {otpSent ? "Resend Code" : "Send Verification Code"}
+                      </button>
+                    )}
+                  </div>
+
+                  {otpNotice && (
+                    <p className="text-[11px] font-semibold text-emerald-800">
+                      {otpNotice}
+                    </p>
+                  )}
+
+                  {otpSent && !isEmailVerified && (
+                    <div className="flex items-center gap-2 pt-1">
+                      <input
+                        type="text"
+                        maxLength={6}
+                        value={otpCode}
+                        onChange={(e) =>
+                          setOtpCode(e.target.value.replace(/\D/g, ""))
+                        }
+                        placeholder="Enter 6-digit Email OTP"
+                        className="w-48 rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs font-bold tracking-widest text-stone-900"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleVerifyEmailCode}
+                        className="rounded-xl bg-gradient-to-r from-[#E8502B] to-emerald-600 px-4 py-2 text-xs font-bold text-white cursor-pointer"
+                      >
+                        Verify OTP
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <h2 className="font-serif text-xl font-bold text-stone-900 pt-2">
+                  Thane Society & Doorstep Details
+                </h2>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
@@ -422,7 +504,7 @@ function CheckoutContent() {
 
                   <div>
                     <label className="block text-xs font-bold text-stone-700 mb-1.5">
-                      Silent Drop Instruction
+                      Silent Drop Instruction (Optional)
                     </label>
                     <input
                       type="text"
@@ -433,7 +515,7 @@ function CheckoutContent() {
                           deliveryNote: e.target.value,
                         })
                       }
-                      placeholder="e.g. Hang pouch on main door handle (Do not ring bell)"
+                      placeholder="e.g. Hang pouch on main door handle"
                       className="w-full rounded-xl border border-stone-300 bg-white px-3.5 py-3 text-sm text-stone-900 placeholder:text-stone-400 focus:border-[#E8502B] focus:outline-none"
                     />
                   </div>
@@ -441,7 +523,7 @@ function CheckoutContent() {
 
                 <div>
                   <label className="block text-xs font-bold text-stone-700 mb-1.5">
-                    Delivery Date (6:00 AM – 8:00 AM) *
+                    Start Date (6:00 AM – 8:00 AM) *
                   </label>
                   <div className="relative max-w-xs">
                     <Calendar className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#E8502B]" />
@@ -461,7 +543,7 @@ function CheckoutContent() {
                 <button
                   type="submit"
                   disabled={isProcessing}
-                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#E8502B] via-[#F05A36] to-[#D97706] py-4 text-base font-bold text-white shadow-xl shadow-orange-500/25 transition hover:brightness-105 cursor-pointer"
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#E8502B] via-[#F05A36] to-emerald-600 py-4 text-sm sm:text-base font-bold text-white shadow-xl shadow-orange-500/25 transition hover:brightness-110 cursor-pointer"
                 >
                   <Lock className="h-4 w-4" />
                   <span>
@@ -479,7 +561,7 @@ function CheckoutContent() {
 
           {/* RIGHT COLUMN: Summary */}
           <div className="lg:col-span-5">
-            <div className="sticky top-28 rounded-[2.2rem] border border-stone-200 bg-white p-6 sm:p-8 shadow-xl space-y-5">
+            <div className="sticky top-28 rounded-3xl sm:rounded-[2.2rem] border border-stone-200 bg-white p-6 sm:p-8 shadow-xl space-y-5">
               <div className="flex items-center justify-between border-b border-stone-100 pb-4">
                 <h2 className="font-serif text-xl font-bold text-stone-900">
                   Order Summary
@@ -492,7 +574,7 @@ function CheckoutContent() {
               {isOneTimeCartCheckout ? (
                 <div className="space-y-3">
                   <p className="text-xs font-bold uppercase tracking-wider text-stone-400">
-                    Selected Flower Weight Packs ({totalCartGrams}g Total)
+                    Selected Flower Packs ({totalCartGrams}g Total)
                   </p>
                   {cartItems.map((item) => (
                     <div
@@ -517,10 +599,20 @@ function CheckoutContent() {
                   <p className="text-xs text-stone-500">
                     {selectedPlan.subtitle}
                   </p>
-                  <div className="rounded-xl bg-[#FAF7F2] p-3.5 border border-orange-100 text-xs text-stone-700">
-                    <strong>Flowers:</strong>{" "}
-                    {customFlowersParam ||
-                      selectedPlan.mixedPredefinedBreakdown}
+                  <div className="rounded-xl bg-[#FAF7F2] p-3.5 border border-orange-100 text-xs text-stone-700 space-y-1">
+                    <p>
+                      <strong>Locked Flower Selection:</strong>{" "}
+                      {customFlowersParam ||
+                        selectedPlan.mixedPredefinedBreakdown}
+                    </p>
+                    <p className="text-[11px] text-emerald-800 font-semibold">
+                      Pause Allowance:{" "}
+                      {selectedPlan.billingCycle === "week"
+                        ? "Up to 2 Deliveries"
+                        : selectedPlan.billingCycle === "month"
+                        ? "Up to 5 Deliveries"
+                        : "Single Day Trial"}
+                    </p>
                   </div>
                 </div>
               )}

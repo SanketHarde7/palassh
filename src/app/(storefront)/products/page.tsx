@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ShoppingBag,
   Sparkles,
@@ -9,9 +10,9 @@ import {
   AlertCircle,
   ArrowRight,
   Flame,
-  Trash2,
   X,
   Scale,
+  Zap,
 } from "lucide-react";
 import { FeatureBoundary } from "@/components/shared/FeatureBoundary";
 import { ScrollReveal } from "@/components/shared/ScrollReveal";
@@ -28,12 +29,12 @@ import {
 } from "@/features/catalog/types";
 
 export default function AllProductsPage() {
+  const router = useRouter();
   const [flowers, setFlowers] = useState<FlowerProduct[]>(INITIAL_FLOWERS);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedWeightIdxByFlower, setSelectedWeightIdxByFlower] = useState<
     Record<string, number>
   >({});
-  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const [customerTier, setCustomerTier] = useState<
     "NORMAL" | "ONE_DAY" | "WEEKLY" | "MONTHLY"
@@ -66,7 +67,10 @@ export default function AllProductsPage() {
     };
   }, []);
 
-  const handleSelectFlowerGramPack = (flower: FlowerProduct) => {
+  const addOrReplaceFlowerInCart = (
+    flower: FlowerProduct,
+    redirectToCheckout: boolean
+  ) => {
     const weightIdx = selectedWeightIdxByFlower[flower.id] || 0;
     const weightObj =
       flower.availableWeights[weightIdx] || flower.availableWeights[0];
@@ -116,6 +120,11 @@ export default function AllProductsPage() {
     setCart(updatedCart);
     saveStoredCart(updatedCart);
 
+    if (redirectToCheckout) {
+      router.push("/checkout?mode=onetime");
+      return;
+    }
+
     const newTotalGrams = otherFlowersGrams + selectedGrams;
     setPopupToast({
       visible: true,
@@ -125,14 +134,8 @@ export default function AllProductsPage() {
     });
     setTimeout(
       () => setPopupToast((prev) => ({ ...prev, visible: false })),
-      4500
+      4000
     );
-  };
-
-  const handleRemoveFromCart = (id: string) => {
-    const updated = cart.filter((item) => item.id !== id);
-    setCart(updated);
-    saveStoredCart(updated);
   };
 
   const totalCartGrams = cart.reduce((acc, i) => acc + (i.grams || 100), 0);
@@ -143,11 +146,11 @@ export default function AllProductsPage() {
 
   return (
     <FeatureBoundary featureName="ALL_PRODUCTS">
-      <div className="min-h-screen bg-[#FAF7F2] py-14 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen w-full overflow-x-hidden bg-[#FAF7F2] py-10 sm:py-14 px-4 sm:px-6 lg:px-8">
         {/* POPUP NOTIFICATION TOAST */}
         {popupToast.visible && (
           <div
-            className={`fixed top-28 right-4 sm:right-6 z-50 max-w-sm w-full rounded-2xl border-2 p-4 text-white shadow-2xl transition-all ${
+            className={`fixed top-24 right-3 left-3 sm:left-auto sm:right-6 z-50 sm:max-w-sm rounded-2xl border-2 p-4 text-white shadow-2xl transition-all ${
               popupToast.isError
                 ? "border-rose-400 bg-rose-950"
                 : "border-amber-400 bg-[#071C15]"
@@ -172,9 +175,9 @@ export default function AllProductsPage() {
                       type="button"
                       onClick={() => {
                         setPopupToast((prev) => ({ ...prev, visible: false }));
-                        setIsCartOpen(true);
+                        window.dispatchEvent(new Event("palassh-open-cart"));
                       }}
-                      className="rounded-lg bg-[#E8502B] px-3 py-1.5 text-[11px] font-bold text-white cursor-pointer"
+                      className="rounded-lg bg-gradient-to-r from-[#E8502B] to-emerald-600 px-3 py-1.5 text-[11px] font-bold text-white cursor-pointer"
                     >
                       Open Cart ({totalCartGrams}g)
                     </button>
@@ -202,17 +205,19 @@ export default function AllProductsPage() {
                 <Sparkles className="h-3.5 w-3.5 text-[#F05A36]" />
                 <span>Thane Farm-to-Mandir Catalog (400601–400608)</span>
               </span>
-              <h1 className="font-serif text-4xl sm:text-5xl font-bold text-stone-900">
+              <h1 className="font-serif text-3xl sm:text-5xl font-bold text-stone-900">
                 All Sacred Puja Flowers
               </h1>
               <p className="text-xs sm:text-sm text-stone-600">
-                Select your exact weight in grams (<strong className="text-stone-900">100g, 250g, 500g, 1000g</strong>). Normal days allow up to 500g combined; Weekly (2 KG) & Monthly (3 KG) subscribers unlock festive quotas.
+                Select your exact weight in grams (<strong className="text-stone-900">100g, 250g, 500g, 1000g</strong>) and either Add to Cart or click <strong className="text-[#E8502B]">Buy Now</strong> for instant checkout.
               </p>
             </div>
 
             <button
               type="button"
-              onClick={() => setIsCartOpen(true)}
+              onClick={() =>
+                window.dispatchEvent(new Event("palassh-open-cart"))
+              }
               className="inline-flex items-center justify-center gap-3 rounded-2xl bg-[#071C15] px-6 py-4 text-xs font-bold text-amber-200 shadow-xl hover:bg-emerald-950 cursor-pointer shrink-0"
             >
               <ShoppingBag className="h-4 w-4 text-[#F05A36]" />
@@ -242,7 +247,7 @@ export default function AllProductsPage() {
                   </p>
                   <p className="text-xs sm:text-sm text-stone-200">
                     {isNormalLockedOnFestive
-                      ? "Today/Tomorrow is marked as a Festive Day. Direct flower purchases are locked for non-subscribers so our Weekly (up to 2 KG) and Monthly (up to 3 KG) members receive guaranteed morning blooms."
+                      ? "Direct flower purchases are locked for non-subscribers on Festive Days so our Weekly (up to 2 KG) and Monthly (up to 3 KG) members receive guaranteed morning blooms."
                       : `Your active ${customerTier} subscription entitles you to book up to ${
                           customerTier === "MONTHLY" ? "3 KG (3000g)" : "2 KG (2000g)"
                         } combined across all flowers!`}
@@ -252,7 +257,7 @@ export default function AllProductsPage() {
               {isNormalLockedOnFestive && (
                 <Link
                   href="/#plans"
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#E8502B] to-[#D97706] px-6 py-3.5 text-xs font-bold text-white shadow-lg shrink-0"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#E8502B] to-emerald-600 px-6 py-3.5 text-xs font-bold text-white shadow-lg shrink-0"
                 >
                   <span>Subscribe to Weekly (₹329) / Monthly (₹1,350)</span>
                   <ArrowRight className="h-4 w-4" />
@@ -316,7 +321,7 @@ export default function AllProductsPage() {
                           </p>
                         </div>
 
-                        {/* Strictly Grams Selector Only (Point #9) */}
+                        {/* Strictly Grams Selector Only */}
                         <div>
                           <label className="block text-[10px] font-bold uppercase tracking-wider text-stone-400 mb-2">
                             Select Weight (Grams Only):
@@ -354,24 +359,46 @@ export default function AllProductsPage() {
                       </div>
                     </div>
 
+                    {/* Dual Action Buttons: 1. Add to Cart + 2. Buy Now (Direct Checkout) */}
                     <div className="px-6 pb-6 pt-2">
-                      <button
-                        type="button"
-                        disabled={!flower.inStock || isNormalLockedOnFestive}
-                        onClick={() => handleSelectFlowerGramPack(flower)}
-                        className={`flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-xs sm:text-sm font-bold transition ${
-                          !flower.inStock || isNormalLockedOnFestive
-                            ? "bg-stone-200 text-stone-500 cursor-not-allowed"
-                            : "bg-[#071C15] text-amber-200 hover:bg-[#E8502B] hover:text-white cursor-pointer shadow-md"
-                        }`}
-                      >
-                        <Scale className="h-4 w-4" />
-                        <span>
-                          {isNormalLockedOnFestive
-                            ? "Locked on Festive Day (Subscribers Only)"
-                            : `Add ${selectedWeight.grams}g Pack • ₹${selectedWeight.price}`}
-                        </span>
-                      </button>
+                      {!flower.inStock || isNormalLockedOnFestive ? (
+                        <button
+                          type="button"
+                          disabled
+                          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-stone-200 py-4 text-xs font-bold text-stone-500 cursor-not-allowed"
+                        >
+                          <Scale className="h-4 w-4" />
+                          <span>
+                            {isNormalLockedOnFestive
+                              ? "Locked on Festive Day (Subscribers Only)"
+                              : "Currently Out of Stock"}
+                          </span>
+                        </button>
+                      ) : (
+                        <div className="grid grid-cols-2 gap-2.5">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              addOrReplaceFlowerInCart(flower, false)
+                            }
+                            className="flex items-center justify-center gap-1.5 rounded-2xl border-2 border-[#071C15] bg-white py-3.5 px-3 text-xs font-bold text-[#071C15] transition hover:bg-[#071C15] hover:text-amber-200 cursor-pointer"
+                          >
+                            <ShoppingBag className="h-3.5 w-3.5 text-[#E8502B] shrink-0" />
+                            <span>Add {selectedWeight.grams}g</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              addOrReplaceFlowerInCart(flower, true)
+                            }
+                            className="flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-to-r from-[#E8502B] via-[#F05A36] to-emerald-600 py-3.5 px-3 text-xs font-bold text-white shadow-md shadow-orange-500/20 transition hover:brightness-110 cursor-pointer"
+                          >
+                            <Zap className="h-3.5 w-3.5 shrink-0" />
+                            <span>Buy Now • ₹{selectedWeight.price}</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </ScrollReveal>
@@ -379,86 +406,6 @@ export default function AllProductsPage() {
             })}
           </div>
         </div>
-
-        {/* SLIDE-OVER CART DRAWER */}
-        {isCartOpen && (
-          <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-xs">
-            <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
-              <div className="w-screen max-w-md bg-white p-6 sm:p-8 shadow-2xl flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between border-b border-stone-100 pb-4">
-                    <h3 className="font-serif text-xl font-bold text-stone-900">
-                      Flower Basket ({totalCartGrams}g)
-                    </h3>
-                    <button
-                      type="button"
-                      onClick={() => setIsCartOpen(false)}
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-100 text-stone-700 cursor-pointer"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-
-                  {cart.length === 0 ? (
-                    <div className="py-20 text-center text-sm text-stone-500">
-                      Your flower basket is empty.
-                    </div>
-                  ) : (
-                    <div className="mt-6 divide-y divide-stone-100">
-                      {cart.map((item) => (
-                        <div
-                          key={item.id}
-                          className="py-4 flex items-center justify-between gap-4"
-                        >
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={item.imageUrl}
-                              alt={item.flowerName}
-                              className="h-12 w-12 rounded-xl object-cover border border-stone-200"
-                            />
-                            <div>
-                              <h4 className="font-serif text-sm font-bold text-stone-900">
-                                {item.flowerName} ({item.marathiName})
-                              </h4>
-                              <p className="text-xs font-bold text-[#E8502B]">
-                                {item.grams}g Pack • ₹{item.unitPrice}
-                              </p>
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveFromCart(item.id)}
-                            className="flex h-8 w-8 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 text-rose-600 cursor-pointer"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {cart.length > 0 && (
-                  <div className="border-t border-stone-100 pt-5 space-y-4">
-                    <div className="flex justify-between text-base font-bold text-stone-900">
-                      <span>Total ({totalCartGrams}g):</span>
-                      <span className="font-serif text-2xl text-[#E8502B]">
-                        ₹{totalCartAmount}
-                      </span>
-                    </div>
-                    <Link
-                      href="/checkout?mode=onetime"
-                      className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#E8502B] to-[#D97706] py-4 text-sm font-bold text-white shadow-lg"
-                    >
-                      <span>Proceed to Checkout</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </FeatureBoundary>
   );

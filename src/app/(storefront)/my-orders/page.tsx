@@ -223,7 +223,8 @@ function MyOrdersContent() {
   const handleToggleDayMode = (dayNumber: number) => {
     const schedule = (sub.schedule || buildDefaultSchedule(7)).map((d) => {
       if (d.dayNumber !== dayNumber) return d;
-      const nextMode = d.mode === "MIXED" ? "CUSTOM" : "MIXED";
+      const nextMode: "MIXED" | "CUSTOM" =
+        d.mode === "MIXED" ? "CUSTOM" : "MIXED";
       const flowers =
         d.selectedFlowers.length > 0 ? d.selectedFlowers : ["Marigold"];
       return {
@@ -271,7 +272,8 @@ function MyOrdersContent() {
   const handleToggleSingleDayPause = (dayNumber: number) => {
     const schedule = (sub.schedule || buildDefaultSchedule(7)).map((d) => {
       if (d.dayNumber !== dayNumber) return d;
-      const nextStatus = d.status === "SCHEDULED" ? "PAUSED" : "SCHEDULED";
+      const nextStatus: "SCHEDULED" | "PAUSED" =
+        d.status === "SCHEDULED" ? "PAUSED" : "SCHEDULED";
       return { ...d, status: nextStatus };
     });
     saveSubscription(

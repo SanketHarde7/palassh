@@ -79,7 +79,7 @@ export function PincodeBox() {
   return (
     <section
       id="pincode-check"
-      className="relative z-20 -mt-10 sm:-mt-14 mx-auto max-w-6xl px-3.5 sm:px-6"
+      className="relative z-20 mx-auto max-w-6xl px-3.5 sm:px-6"
     >
       <div className="overflow-hidden rounded-3xl sm:rounded-[2rem] border border-emerald-900/15 bg-white shadow-2xl shadow-stone-900/10">
         {/* Top Botanical Emerald + Saffron Status Ribbon */}

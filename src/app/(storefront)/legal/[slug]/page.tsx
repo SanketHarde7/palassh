@@ -19,7 +19,7 @@ const LEGAL_CONTENT: Record<
     sections: [
       {
         heading: "1. Information We Collect",
-        body: "PALASSH collects your name, WhatsApp phone number, building/society name, flat number, and silent doorstep delivery instructions solely to fulfill your 5:00 AM – 8:00 AM morning puja flower deliveries across Thane and Mumbai.",
+        body: "PALASSH collects your name,phone number,Email, building/society name, flat number, and silent doorstep delivery instructions solely to fulfill your 6:00 AM – 8:00 AM morning puja flower deliveries across Thane and Mumbai.",
       },
       {
         heading: "2. Payment Security",
@@ -29,6 +29,18 @@ const LEGAL_CONTENT: Record<
         heading: "3. Zero Spam Guarantee",
         body: "We never sell or rent your personal contact details to third-party marketers. WhatsApp notifications are strictly used for delivery updates, pause confirmations, and support.",
       },
+      {
+        heading: "4.About Refund",
+        body: "When customer subscribes to any plan , after subscibing then customer cannot ask for direct refund of cash amount ].",
+      },
+      {
+        heading: "5. About Orders and deliveries ",
+        body: "When user is on weekly / monthly plan then he /she can pause delivery dates(on weekly plan: upto 2 & on monthly plan : upto 5),after this limit crosses then the responsibility of loss will on customers side ,palassh will not be responsible for this loss",
+      },
+      {
+        heading: "6. About Flower Quanlity",
+        body: "Only If the flower is rotten then user can raise complaint and the palassh will send another package to the customer but only if customer raises complaint under 2 hours after the flower are delivered.",
+      },
     ],
   },
   "terms-and-conditions": {
@@ -36,12 +48,12 @@ const LEGAL_CONTENT: Record<
     updated: "October 2026",
     sections: [
       {
-        heading: "1. Silent Morning Drop Protocol (5:00 AM – 8:00 AM)",
+        heading: "1. Silent Morning Drop Protocol (6:00 AM – 8:00 AM)",
         body: "To respect your family's sleep, PALASSH riders never ring the doorbell or make phone calls during morning delivery hours. Pouches are hung on your main door handle or placed in your designated basket.",
       },
       {
         heading: "2. 8:00 PM Evening Cut-Off for Day-Wise Modifications",
-        body: "Subscribers may change their flower selection (Mixed Pack or Separate Flowers via checkboxes) or pause any upcoming delivery day until 8:00 PM the previous evening via the My-Orders portal.",
+        body: "Subscribers may change their pause any upcoming delivery day until 8:00 PM the previous evening via the My-Orders portal.",
       },
       {
         heading: "3. Society Access Responsibility",

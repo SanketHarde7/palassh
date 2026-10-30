@@ -1,26 +1,27 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
+import { Fraunces, Inter_Tight } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { FeatureBoundary } from "@/components/shared/FeatureBoundary";
 
-const playfair = Playfair_Display({
+const fraunces = Fraunces({
   subsets: ["latin"],
   variable: "--font-serif",
-  weight: ["600", "700"],
+  axes: ["SOFT", "WONK", "opsz"],
+  display: "swap",
 });
 
-const jakarta = Plus_Jakarta_Sans({
+const interTight = Inter_Tight({
   subsets: ["latin"],
   variable: "--font-sans",
-  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "PALASSH | Fresh Puja Flower Subscription in Thane & Mumbai",
+  title: "PALASSH | Sacred Puja Flower Subscription in Thane (400601–400608)",
   description:
-    "Flowers that pray with you. Farm-fresh Marigold, Mogra & sacred puja flowers delivered daily between 5 AM - 8 AM across Thane and Mumbai. Plans starting at ₹76/day.",
+    "Flowers that pray with you. Farm-fresh Marigold (झेंडू), Shevanti (शेवंती) & Red Hibiscus (लाल जास्वंद) delivered silently every morning between 6:00 AM – 8:00 AM across Thane pincodes. Plans starting at ₹49/day.",
 };
 
 export default function RootLayout({
@@ -29,8 +30,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${playfair.variable} ${jakarta.variable} scroll-smooth`}>
-      <body className="min-h-screen flex flex-col bg-white text-stone-900 antialiased selection:bg-orange-100 selection:text-orange-900">
+    <html
+      lang="en"
+      className={`${fraunces.variable} ${interTight.variable} font-sans scroll-smooth`}
+    >
+      <body className="min-h-screen flex flex-col bg-white text-stone-900 antialiased selection:bg-orange-100 selection:text-orange-900 font-sans">
         <FeatureBoundary featureName="LAYOUT">
           <Navbar />
         </FeatureBoundary>

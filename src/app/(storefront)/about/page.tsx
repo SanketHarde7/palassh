@@ -47,7 +47,7 @@ export default function AboutUsPage() {
                 </h1>
 
                 <p className="text-xs sm:text-base lg:text-lg text-emerald-100/90 leading-relaxed max-w-2xl">
-                  Born in Thane, PALASSH was started with a simple realization: the flowers we offer to God every morning should be overflowing with life, natural dew, and farm fragrance—never wilted from 4 days inside a market ice box.
+                  Born in Thane, PALASSH was started with a simple realization: the flowers we offer to God every morning should be overflowing with life, natural dew, and farm fragrance never wilted from 4 days inside a market ice box.
                 </p>
 
                 <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -69,7 +69,7 @@ export default function AboutUsPage() {
 
               {/* Right Showcase Image Card */}
               <div className="lg:col-span-5">
-                <div className="relative mx-auto max-w-sm overflow-hidden rounded-3xl border-4 border-white/15 bg-stone-900 shadow-2xl aspect-4/3">
+                <div className="relative mx-auto max-w-sm overflow-hidden rounded-3xl border-4 border-white/15 bg-stone-900 shadow-2xl aspect-[4/3]">
                   <img
                     src="/images/hero-banner.jpg"
                     alt="PALASSH Sacred Morning Blooms"

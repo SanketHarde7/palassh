@@ -374,7 +374,7 @@ function CheckoutContent() {
                   <label className="block text-xs font-bold text-stone-800 flex items-center gap-1.5">
                     <Mail className="h-3.5 w-3.5 text-[#E8502B]" />
                     <span>
-                      Email Address (For Account Linking & Multi-Device OTP) *
+                      Email Address
                     </span>
                   </label>
                   <div className="flex flex-col sm:flex-row gap-2.5">
@@ -441,7 +441,7 @@ function CheckoutContent() {
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
                     <label className="block text-xs font-bold text-stone-700 mb-1.5">
-                      Thane Pincode (400601–400608) *
+                      Pincode (400601 to 400608) *
                     </label>
                     <input
                       type="text"

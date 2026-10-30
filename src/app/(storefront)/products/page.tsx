@@ -279,9 +279,9 @@ export default function AllProductsPage() {
 
               return (
                 <ScrollReveal key={flower.id} delayMs={(idx % 3) * 110}>
-                  <div className="flex flex-col justify-between h-full overflow-hidden rounded-[2.2rem] border border-stone-200/90 bg-white shadow-[0_18px_45px_-12px_rgba(28,22,19,0.09)] transition hover:border-[#D97706] hover:shadow-2xl">
+                  <div className="flex flex-col justify-between h-full overflow-hidden rounded-[2.2rem] border border-stone-200/90 bg-white shadow-[0_16px_40px_-12px_rgba(28,22,19,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_22px_45px_-12px_rgba(28,22,19,0.14)] hover:border-[#E8502B]/60">
                     <div>
-                      <div className="relative aspect-4/3 w-full overflow-hidden bg-stone-100">
+                      <div className="relative aspect-[4/3] w-full overflow-hidden bg-stone-100">
                         <img
                           src={flower.imageUrl}
                           alt={flower.name}

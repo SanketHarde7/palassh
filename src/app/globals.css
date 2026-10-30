@@ -3,6 +3,15 @@
 @theme {
   --font-serif: var(--font-serif), Georgia, Cambria, "Times New Roman", Times, serif;
   --font-sans: var(--font-sans), system-ui, -apple-system, sans-serif;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+  --duration-850: 850ms;
+  --duration-900: 900ms;
+  --duration-950: 950ms;
+  --duration-1100: 1100ms;
+  --duration-1300: 1300ms;
+  --duration-1400: 1400ms;
 }
 
 :root {
@@ -20,6 +29,17 @@ body {
   color: var(--text-main);
   font-family: var(--font-sans);
 }
+
+/* Typography Enhancements */
+.font-serif {
+  font-family: var(--font-serif), Georgia, serif;
+  font-optical-sizing: auto;
+  font-variation-settings: "SOFT" 30, "WONK" 1;
+  letter-spacing: -0.02em;
+}
+
+h1, h2 { letter-spacing: -0.035em; }
+h3, h4 { letter-spacing: -0.02em; }
 
 /* Subtle Sacred Dot Pattern for Luxury Depth */
 .bg-sacred-pattern {
@@ -53,4 +73,220 @@ body {
 }
 .horizontal-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: rgba(217, 119, 6, 0.7);
+}
+
+/* ---------- GRAIN OVERLAY ---------- */
+.grain { position: relative; isolation: isolate; }
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.14;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  z-index: 1;
+}
+
+/* Global button active compression */
+button:active, [role="button"]:active {
+  transform: scale(0.97);
+  transition-duration: 80ms;
+}
+
+/* Section Wipe */
+@keyframes section-wipe {
+  0% { clip-path: inset(8% 0 0 0); }
+  100% { clip-path: inset(0 0 0 0); }
+}
+.section-wipe[data-visible="true"] {
+  animation: section-wipe 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ============================================================
+   PALASSH — MOTION SYSTEM v2
+   ============================================================ */
+
+/* ---------- 1. SPLIT-TEXT MASK REVEAL ---------- */
+.split-root { perspective: 1000px; }
+.split-chunk { display: inline-block; white-space: nowrap; }
+
+.split-word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.18em;   /* stops descenders (g, y, p) clipping */
+  margin-bottom: -0.18em;
+  perspective: 700px;
+}
+
+.split-word > span {
+  display: inline-block;
+  transform-origin: 50% 100%;
+  backface-visibility: hidden;
+  will-change: transform, opacity, filter;
+  opacity: 0;
+  transform: translate3d(0, 118%, 0) rotateX(-52deg);
+  filter: blur(8px);
+}
+
+.split-root[data-play="true"] .split-word > span {
+  animation: word-rise 1100ms var(--ease-out-expo) both;
+  animation-delay: calc(
+    var(--split-delay, 0ms) + var(--i, 0) * var(--split-stagger, 60ms)
+  );
+}
+
+@keyframes word-rise {
+  0%   { opacity: 0; transform: translate3d(0, 118%, 0) rotateX(-52deg); filter: blur(8px); }
+  60%  { opacity: 1; filter: blur(0px); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) rotateX(0deg); filter: blur(0px); }
+}
+
+/* ---------- 2. HERO CHOREOGRAPHY ---------- */
+@keyframes fade-lift-in {
+  0%   { opacity: 0; transform: translate3d(0, 26px, 0); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.animate-fade-lift-in { animation: fade-lift-in 850ms var(--ease-out-expo) both; }
+
+@keyframes wipe-right {
+  0%   { clip-path: inset(0 100% 0 0); transform: translate3d(-22px, 0, 0); }
+  100% { clip-path: inset(0 0 0 0);    transform: translate3d(0, 0, 0); }
+}
+.animate-wipe-right { animation: wipe-right 1100ms var(--ease-out-expo) both; }
+
+@keyframes hero-wipe {
+  0%   { clip-path: inset(0 0 0 100%); }
+  100% { clip-path: inset(0 0 0 0); }
+}
+.animate-hero-wipe { animation: hero-wipe 1300ms var(--ease-out-expo) both; }
+
+/* Infinite, ultra-slow gradient drift on the italic headline (slowed to 14s) */
+@keyframes gradient-pan {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+.animate-gradient-pan { animation: gradient-pan 14s ease-in-out infinite; }
+
+/* Living aurora blobs behind the hero */
+@keyframes aurora-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33%      { transform: translate3d(7%, -9%, 0) scale(1.16); }
+  66%      { transform: translate3d(-8%, 6%, 0) scale(0.9); }
+}
+.animate-aurora {
+  animation: aurora-drift 20s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Slide progress fill bar (matches 6s autoplay) */
+@keyframes hero-progress {
+  0%   { width: 0%; }
+  100% { width: 100%; }
+}
+.animate-slide-progress {
+  animation: hero-progress 6s linear forwards;
+}
+
+/* ---------- 2B. MARQUEE TICKER ---------- */
+@keyframes palassh-marquee {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+.animate-palassh-marquee {
+  display: flex;
+  width: max-content;
+  animation: palassh-marquee 35s linear infinite;
+}
+.animate-palassh-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* ---------- 3. RITUAL TIMELINE BEAM ---------- */
+@keyframes beam-draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.animate-beam-draw { animation: beam-draw 1400ms var(--ease-out-expo) both; }
+
+@keyframes beam-travel {
+  0%   { left: 0%;   opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+.animate-beam-travel {
+  animation: beam-travel 3.8s cubic-bezier(0.45, 0, 0.55, 1) 1.45s infinite;
+}
+
+/* ---------- 4. CARD ENTRANCE (3D flip + blur) ---------- */
+@keyframes card-flip-in {
+  0%   { opacity: 0; transform: perspective(1200px) rotateX(16deg) translate3d(0, 56px, 0) scale(0.94); filter: blur(7px); }
+  100% { opacity: 1; transform: perspective(1200px) rotateX(0) translate3d(0, 0, 0) scale(1); filter: blur(0); }
+}
+.reveal-flip {
+  opacity: 0;
+  transform: perspective(1200px) rotateX(16deg) translate3d(0, 56px, 0) scale(0.94);
+  filter: blur(7px);
+}
+.reveal-flip[data-visible="true"] {
+  animation: card-flip-in 950ms var(--ease-out-expo) both;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+/* Springy pop for icon circles / step numbers */
+@keyframes pop-in {
+  0%   { opacity: 0; transform: scale(0.4) rotate(-14deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+.animate-pop-in {
+  opacity: 0;
+  transform: scale(0.4) rotate(-14deg);
+}
+[data-visible="true"] .animate-pop-in {
+  animation: pop-in 750ms var(--ease-spring) both;
+}
+
+/* ---------- 5. TOAST ---------- */
+@keyframes toast-in {
+  0%   { opacity: 0; transform: translate3d(110%, -8px, 0) scale(0.92); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+.animate-toast-in { animation: toast-in 620ms var(--ease-spring) both; }
+
+@keyframes toast-drain { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+.animate-toast-drain {
+  animation: toast-drain 5000ms linear forwards;
+  transform-origin: left center;
+}
+
+/* ---------- 6. CART BADGE BUMP ---------- */
+@keyframes badge-bump {
+  0%, 100% { transform: scale(1); }
+  35%      { transform: scale(1.4) rotate(-7deg); }
+  62%      { transform: scale(0.9)  rotate(4deg); }
+}
+.animate-badge-bump { animation: badge-bump 620ms var(--ease-spring); }
+
+/* ---------- 7. ACCESSIBILITY KILL SWITCH ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .split-word > span {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  .reveal-flip {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  .animate-pop-in {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -38,8 +38,11 @@ import { MorningRitual } from "@/components/sections/MorningRitual";
 import {
   FlowerProduct,
   INITIAL_FLOWERS,
+  INITIAL_PLANS,
+  SubscriptionPlan,
   CartItem,
   getActiveFlowersCatalog,
+  getActivePlansCatalog,
   getStoredCart,
   saveStoredCart,
   getCurrentCustomerTier,
@@ -61,50 +64,62 @@ export interface HeroSlideBanner {
   priceTag: string;
 }
 
-export const DEFAULT_HERO_BANNERS: HeroSlideBanner[] = [
-  {
-    id: "slide-1",
-    badge: "॥ जय जय रघुवीर समर्थ ॥ • Thane 400601–400608",
-    titleLine1: "Sacred Puja Blooms,",
-    titleHighlight: "flowers that pray with you.",
-    subtitle:
-      "Plucked at 1:30 AM from Nashik & Dahanu farms. Zero cold storage. Hung silently on your doorstep every morning between 6:00 AM – 8:00 AM.",
-    imageUrl: "/images/hero-banner.jpg",
-    primaryBtnText: "Subscriptions From ₹49",
-    primaryBtnHref: "#plans",
-    secondaryBtnText: "Shop Fresh Flowers",
-    secondaryBtnHref: "#fresh-flowers",
-    priceTag: "Plans: ₹49 Day • ₹329 Week • ₹1,350 Month",
-  },
-  {
-    id: "slide-2",
-    badge: "100% Farm-to-Mandir Purity • Zero Ice Box",
-    titleLine1: "Dew-Fresh Marigold,",
-    titleHighlight: "Shevanti & Red Hibiscus.",
-    subtitle:
-      "Order exact gram packs (100g, 250g, 500g) directly or unlock up to 2 KG – 3 KG Festive Day quotas with our Weekly & Monthly subscriptions.",
-    imageUrl: "/images/chrysanthemum.jpeg",
-    primaryBtnText: "Buy Fresh Flowers Now",
-    primaryBtnHref: "/products",
-    secondaryBtnText: "Check Society Pincode",
-    secondaryBtnHref: "#pincode-check",
-    priceTag: "Single Morning Slot: 6:00 AM – 8:00 AM",
-  },
-  {
-    id: "slide-3",
-    badge: "SacredGanpati & Devi Offerings",
-    titleLine1: "Hand-Picked Crimson",
-    titleHighlight: "Hibiscus & Fresh Tulsi.",
-    subtitle:
-      "Packed in breathable plastic-free pouches at our Kalwa hub so every bud opens fresh on your home altar during morning aarti.",
-    imageUrl: "/images/hibiscus.jpeg",
-    primaryBtnText: "Start Monthly Plan @ ₹1,350",
-    primaryBtnHref: "/checkout?plan=monthly-sacred-assortment",
-    secondaryBtnText: "View All Blooms",
-    secondaryBtnHref: "/products",
-    priceTag: "Pause Anytime Before 8:00 PM",
-  },
-];
+export function getDynamicHeroBanners(plans: SubscriptionPlan[]): HeroSlideBanner[] {
+  const oneDay = plans.find((p) => p.id === "plan-daily") || plans[0] || INITIAL_PLANS[0];
+  const weekly = plans.find((p) => p.id === "plan-weekly") || plans[1] || INITIAL_PLANS[1];
+  const monthly = plans.find((p) => p.id === "plan-monthly") || plans[2] || INITIAL_PLANS[2];
+
+  const oneDayPrice = `₹${oneDay.price}`;
+  const weeklyPrice = `₹${weekly.price}`;
+  const monthlyPrice = `₹${monthly.price.toLocaleString("en-IN")}`;
+
+  return [
+    {
+      id: "slide-1",
+      badge: "॥ जय जय रघुवीर समर्थ ॥ • Thane 400601–400608",
+      titleLine1: "Sacred Puja Blooms,",
+      titleHighlight: "flowers that pray with you.",
+      subtitle:
+        "Plucked at 1:30 AM from Nashik & Dahanu farms. Zero cold storage. Hung silently on your doorstep every morning between 6:00 AM – 8:00 AM.",
+      imageUrl: "/images/hero-banner.jpg",
+      primaryBtnText: `Subscriptions From ${oneDayPrice}`,
+      primaryBtnHref: "#plans",
+      secondaryBtnText: "Shop Fresh Flowers",
+      secondaryBtnHref: "#fresh-flowers",
+      priceTag: `Plans: ${oneDayPrice} Day • ${weeklyPrice} Week • ${monthlyPrice} Month`,
+    },
+    {
+      id: "slide-2",
+      badge: "100% Farm-to-Mandir Purity • Zero Ice Box",
+      titleLine1: "Dew-Fresh Marigold,",
+      titleHighlight: "Shevanti & Red Hibiscus.",
+      subtitle:
+        "Order exact gram packs (100g, 250g, 500g) directly or unlock up to 2 KG – 3 KG Festive Day quotas with our Weekly & Monthly subscriptions.",
+      imageUrl: "/images/chrysanthemum.jpeg",
+      primaryBtnText: "Buy Fresh Flowers Now",
+      primaryBtnHref: "/products",
+      secondaryBtnText: "Check Society Pincode",
+      secondaryBtnHref: "#pincode-check",
+      priceTag: "Single Morning Slot: 6:00 AM – 8:00 AM",
+    },
+    {
+      id: "slide-3",
+      badge: "SacredGanpati & Devi Offerings",
+      titleLine1: "Hand-Picked Crimson",
+      titleHighlight: "Hibiscus & Fresh Tulsi.",
+      subtitle:
+        "Packed in breathable plastic-free pouches at our Kalwa hub so every bud opens fresh on your home altar during morning aarti.",
+      imageUrl: "/images/hibiscus.jpeg",
+      primaryBtnText: `Start Monthly Plan @ ${monthlyPrice}`,
+      primaryBtnHref: "/checkout?plan=monthly-sacred-assortment",
+      secondaryBtnText: "View All Blooms",
+      secondaryBtnHref: "/products",
+      priceTag: "Pause Anytime Before 8:00 PM",
+    },
+  ];
+}
+
+export const DEFAULT_HERO_BANNERS: HeroSlideBanner[] = getDynamicHeroBanners(INITIAL_PLANS);
 
 const SHOP_ADDRESS =
   "6X4X+HJ5 Glenmark Residency, 60 Feet Rd, Kharegaon, Kalwa, Thane, Maharashtra 400605";
@@ -271,6 +286,7 @@ function RitualBeam() {
 export default function HomePage() {
   const router = useRouter();
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [plans, setPlans] = useState<SubscriptionPlan[]>(INITIAL_PLANS);
   const [flowers, setFlowers] = useState<FlowerProduct[]>(INITIAL_FLOWERS);
   const [selectedWeightIdxByFlower, setSelectedWeightIdxByFlower] = useState<
     Record<string, number>
@@ -279,8 +295,9 @@ export default function HomePage() {
   const reviewsScrollRef = useRef<HTMLDivElement | null>(null);
 
   // Full-Screen Movable Hero Carousel State
-  const [heroBanners, setHeroBanners] =
-    useState<HeroSlideBanner[]>(DEFAULT_HERO_BANNERS);
+  const [heroBanners, setHeroBanners] = useState<HeroSlideBanner[]>(() =>
+    getDynamicHeroBanners(INITIAL_PLANS)
+  );
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
@@ -312,27 +329,20 @@ export default function HomePage() {
 
   useEffect(() => {
     const syncState = () => {
+      const activePlans = getActivePlansCatalog();
+      setPlans(activePlans);
+      setHeroBanners(getDynamicHeroBanners(activePlans));
       setFlowers(getActiveFlowersCatalog());
       setCart(getStoredCart());
       setCustomerTier(getCurrentCustomerTier());
       setFestiveStatus(getFestiveModeStatus());
-
-      try {
-        const savedBanners = localStorage.getItem("palassh_hero_banners_v1");
-        if (savedBanners) {
-          const parsed = JSON.parse(savedBanners);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setHeroBanners(parsed);
-          }
-        }
-      } catch {
-        // Ignore error
-      }
     };
     syncState();
 
     window.addEventListener("palassh-cart-updated", syncState);
     window.addEventListener("palassh-festive-updated", syncState);
+    window.addEventListener("palassh-plans-updated", syncState);
+    window.addEventListener("storage", syncState);
 
     try {
       const savedRevs = localStorage.getItem("palassh_customer_reviews_v2");
@@ -347,6 +357,8 @@ export default function HomePage() {
     return () => {
       window.removeEventListener("palassh-cart-updated", syncState);
       window.removeEventListener("palassh-festive-updated", syncState);
+      window.removeEventListener("palassh-plans-updated", syncState);
+      window.removeEventListener("storage", syncState);
     };
   }, []);
 
@@ -1012,7 +1024,7 @@ export default function HomePage() {
       {/* 4. CUSTOMIZABLE SUBSCRIPTION PLANS */}
       <FeatureBoundary featureName="CATALOG">
         <ScrollReveal variant="flip">
-          <PlanCards />
+          <PlanCards plans={plans} />
         </ScrollReveal>
       </FeatureBoundary>
 
@@ -1046,52 +1058,60 @@ export default function HomePage() {
             <RitualBeam />
 
             <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-3 relative z-10">
-              {[
-                {
-                  step: "01",
-                  icon: CalendarCheck,
-                  title: "Choose Plan or Weight Pack",
-                  desc: "Subscribe to One Day (₹49), Weekly (₹329), Monthly (₹1,350) or buy individual flower weight packs (up to 500g).",
-                },
-                {
-                  step: "02",
-                  icon: Clock,
-                  title: "6–8 AM Silent Doorstep Drop",
-                  desc: "Every morning between 6:00 AM and 8:00 AM, our rider hangs your breathable flower pouch on your door without ringing the bell.",
-                },
-                {
-                  step: "03",
-                  icon: PauseCircle,
-                  title: "Interactive Calendar Pause",
-                  desc: "Traveling out of Thane? Tap any date on your My-Orders calendar before 8:00 PM to pause (2 Weekly / 5 Monthly pauses).",
-                },
-              ].map((item, i) => (
-                <ScrollReveal
-                  key={item.step}
-                  delayMs={i * 150}
-                  variant="blur-scale"
-                >
-                  <Tilt3DCard className="group rounded-3xl sm:rounded-[2rem] border border-orange-200/70 bg-white p-7 sm:p-8 shadow-lg h-full">
-                    <div className="flex items-center justify-between">
-                      <div
-                        className="animate-pop-in flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#E8502B] to-emerald-600 text-white shadow-md"
-                        style={{ animationDelay: `${i * 150 + 220}ms` }}
-                      >
-                        <item.icon className="h-6 w-6" />
+              {(() => {
+                const oneDayPrice = plans.find((p) => p.id === "plan-daily")?.price || 49;
+                const weeklyPrice = plans.find((p) => p.id === "plan-weekly")?.price || 329;
+                const monthlyPrice = (
+                  plans.find((p) => p.id === "plan-monthly")?.price || 1350
+                ).toLocaleString("en-IN");
+
+                return [
+                  {
+                    step: "01",
+                    icon: CalendarCheck,
+                    title: "Choose Plan or Weight Pack",
+                    desc: `Subscribe to One Day (₹${oneDayPrice}), Weekly (₹${weeklyPrice}), Monthly (₹${monthlyPrice}) or buy individual flower weight packs (up to 500g).`,
+                  },
+                  {
+                    step: "02",
+                    icon: Clock,
+                    title: "6–8 AM Silent Doorstep Drop",
+                    desc: "Every morning between 6:00 AM and 8:00 AM, our rider hangs your breathable flower pouch on your door without ringing the bell.",
+                  },
+                  {
+                    step: "03",
+                    icon: PauseCircle,
+                    title: "Interactive Calendar Pause",
+                    desc: "Traveling out of Thane? Tap any date on your My-Orders calendar before 8:00 PM to pause (2 Weekly / 5 Monthly pauses).",
+                  },
+                ].map((item, i) => (
+                  <ScrollReveal
+                    key={item.step}
+                    delayMs={i * 150}
+                    variant="blur-scale"
+                  >
+                    <Tilt3DCard className="group rounded-3xl sm:rounded-[2rem] border border-orange-200/70 bg-white p-7 sm:p-8 shadow-lg h-full">
+                      <div className="flex items-center justify-between">
+                        <div
+                          className="animate-pop-in flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#E8502B] to-emerald-600 text-white shadow-md"
+                          style={{ animationDelay: `${i * 150 + 220}ms` }}
+                        >
+                          <item.icon className="h-6 w-6" />
+                        </div>
+                        <span className="font-serif text-4xl font-bold bg-gradient-to-b from-[#E8502B]/30 to-emerald-700/20 bg-clip-text text-transparent">
+                          {item.step}
+                        </span>
                       </div>
-                      <span className="font-serif text-4xl font-bold bg-gradient-to-b from-[#E8502B]/30 to-emerald-700/20 bg-clip-text text-transparent">
-                        {item.step}
-                      </span>
-                    </div>
-                    <h3 className="mt-6 font-serif text-xl sm:text-2xl font-bold text-stone-900">
-                      {item.title}
-                    </h3>
-                    <p className="mt-2 text-xs sm:text-sm leading-relaxed text-stone-600">
-                      {item.desc}
-                    </p>
-                  </Tilt3DCard>
-                </ScrollReveal>
-              ))}
+                      <h3 className="mt-6 font-serif text-xl sm:text-2xl font-bold text-stone-900">
+                        {item.title}
+                      </h3>
+                      <p className="mt-2 text-xs sm:text-sm leading-relaxed text-stone-600">
+                        {item.desc}
+                      </p>
+                    </Tilt3DCard>
+                  </ScrollReveal>
+                ));
+              })()}
             </div>
           </div>
         </div>

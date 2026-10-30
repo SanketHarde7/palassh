@@ -31,6 +31,8 @@ import {
   CATALOG_STORAGE_KEY,
   FESTIVE_MODE_STORAGE_KEY,
   getActiveFlowersCatalog,
+  getActivePlansCatalog,
+  saveActivePlansCatalog,
   getFestiveModeStatus,
   getFestiveDatesList,
   saveFestiveDatesList,
@@ -121,15 +123,7 @@ export default function AdminDashboardPage() {
     setFlowers(getActiveFlowersCatalog());
     setFestiveDates(getFestiveDatesList());
     setFestiveMode(getFestiveModeStatus());
-
-    try {
-      const savedPlans = localStorage.getItem("palassh_plans_v2");
-      if (savedPlans) {
-        setPlans(JSON.parse(savedPlans));
-      }
-    } catch {
-      // Ignore error
-    }
+    setPlans(getActivePlansCatalog());
 
     try {
       const liveRows: DispatchRow[] = [];
@@ -364,16 +358,22 @@ export default function AdminDashboardPage() {
   const handleUpdatePlanPrice = (planId: string, newPrice: number) => {
     const updated = plans.map((p) => {
       if (p.id !== planId) return p;
-      const perDay = Math.round(newPrice / p.deliveriesCount);
+      const count = p.deliveriesCount || 1;
+      const perDay = Math.round(newPrice / count);
       return {
         ...p,
         price: newPrice,
         perDayEffectivePrice: perDay,
+        shortHighlights: p.shortHighlights?.map((sh) =>
+          sh.includes("effective") || sh.includes("/morning")
+            ? `${count} Morning Deliveries (₹${perDay}/morning)`
+            : sh
+        ),
       };
     });
     setPlans(updated);
-    localStorage.setItem("palassh_plans_v2", JSON.stringify(updated));
-    showNotice("Updated subscription plan pricing.");
+    saveActivePlansCatalog(updated);
+    showNotice(`Updated plan pricing across the entire site.`);
   };
 
   // Generate calendar grid for current `calendarMonth`

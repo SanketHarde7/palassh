@@ -19,8 +19,11 @@ import { ScrollReveal } from "@/components/shared/ScrollReveal";
 import {
   FlowerProduct,
   INITIAL_FLOWERS,
+  INITIAL_PLANS,
+  SubscriptionPlan,
   CartItem,
   getActiveFlowersCatalog,
+  getActivePlansCatalog,
   getStoredCart,
   saveStoredCart,
   getCurrentCustomerTier,
@@ -30,6 +33,7 @@ import {
 
 export default function AllProductsPage() {
   const router = useRouter();
+  const [plans, setPlans] = useState<SubscriptionPlan[]>(INITIAL_PLANS);
   const [flowers, setFlowers] = useState<FlowerProduct[]>(INITIAL_FLOWERS);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedWeightIdxByFlower, setSelectedWeightIdxByFlower] = useState<
@@ -53,6 +57,7 @@ export default function AllProductsPage() {
 
   useEffect(() => {
     const syncAll = () => {
+      setPlans(getActivePlansCatalog());
       setFlowers(getActiveFlowersCatalog());
       setCart(getStoredCart());
       setCustomerTier(getCurrentCustomerTier());
@@ -61,9 +66,13 @@ export default function AllProductsPage() {
     syncAll();
     window.addEventListener("palassh-cart-updated", syncAll);
     window.addEventListener("palassh-festive-updated", syncAll);
+    window.addEventListener("palassh-plans-updated", syncAll);
+    window.addEventListener("storage", syncAll);
     return () => {
       window.removeEventListener("palassh-cart-updated", syncAll);
       window.removeEventListener("palassh-festive-updated", syncAll);
+      window.removeEventListener("palassh-plans-updated", syncAll);
+      window.removeEventListener("storage", syncAll);
     };
   }, []);
 
@@ -259,7 +268,13 @@ export default function AllProductsPage() {
                   href="/#plans"
                   className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#E8502B] to-emerald-600 px-6 py-3.5 text-xs font-bold text-white shadow-lg shrink-0"
                 >
-                  <span>Subscribe to Weekly (₹329) / Monthly (₹1,350)</span>
+                  {(() => {
+                    const weeklyPrice = plans.find((p) => p.id === "plan-weekly")?.price || 329;
+                    const monthlyPrice = (
+                      plans.find((p) => p.id === "plan-monthly")?.price || 1350
+                    ).toLocaleString("en-IN");
+                    return <span>Subscribe to Weekly (₹{weeklyPrice}) / Monthly (₹{monthlyPrice})</span>;
+                  })()}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               )}

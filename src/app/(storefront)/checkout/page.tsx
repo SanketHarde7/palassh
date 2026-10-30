@@ -24,6 +24,7 @@ import {
   getFestiveModeStatus,
   validateDirectFlowerPurchaseLimit,
   getTomorrowDateString,
+  getActivePlansCatalog,
 } from "@/features/catalog/types";
 import { checkPincodeAvailability } from "@/features/pincode-checker/pincode.service";
 import { FeatureBoundary } from "@/components/shared/FeatureBoundary";
@@ -37,9 +38,10 @@ function CheckoutContent() {
 
   const isOneTimeCartCheckout = modeParam === "onetime";
 
-  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan>(
-    INITIAL_PLANS.find((p) => p.slug === planSlugParam) || INITIAL_PLANS[2]
-  );
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan>(() => {
+    const catalog = getActivePlansCatalog();
+    return catalog.find((p) => p.slug === planSlugParam) || catalog[2] || INITIAL_PLANS[2];
+  });
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   // Strictly Empty Initial State (Clean Placeholders Only)
@@ -70,9 +72,19 @@ function CheckoutContent() {
   const [formError, setFormError] = useState("");
 
   useEffect(() => {
-    const matched = INITIAL_PLANS.find((p) => p.slug === planSlugParam);
-    if (matched) setSelectedPlan(matched);
-    setCartItems(getStoredCart());
+    const syncCheckout = () => {
+      const activePlans = getActivePlansCatalog();
+      const matched = activePlans.find((p) => p.slug === planSlugParam);
+      if (matched) setSelectedPlan(matched);
+      setCartItems(getStoredCart());
+    };
+    syncCheckout();
+    window.addEventListener("palassh-plans-updated", syncCheckout);
+    window.addEventListener("storage", syncCheckout);
+    return () => {
+      window.removeEventListener("palassh-plans-updated", syncCheckout);
+      window.removeEventListener("storage", syncCheckout);
+    };
   }, [planSlugParam]);
 
   const handlePincodeChange = (val: string) => {

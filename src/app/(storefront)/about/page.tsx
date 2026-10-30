@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Leaf,
@@ -17,11 +17,32 @@ import {
   PhoneCall,
 } from "lucide-react";
 import { ScrollReveal } from "@/components/shared/ScrollReveal";
+import {
+  INITIAL_PLANS,
+  SubscriptionPlan,
+  getActivePlansCatalog,
+} from "@/features/catalog/types";
 
 const SHOP_ADDRESS =
   "6X4X+HJ5 Glenmark Residency, 60 Feet Rd, Kharegaon, Kalwa, Thane, Maharashtra 400605";
 
 export default function AboutUsPage() {
+  const [plans, setPlans] = useState<SubscriptionPlan[]>(INITIAL_PLANS);
+
+  useEffect(() => {
+    const sync = () => {
+      setPlans(getActivePlansCatalog());
+    };
+    sync();
+    window.addEventListener("palassh-plans-updated", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("palassh-plans-updated", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  const oneDay = plans.find((p) => p.id === "plan-daily") || plans[0] || INITIAL_PLANS[0];
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-[#FAF7F2] py-10 sm:py-16 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl space-y-16 sm:space-y-24">
@@ -55,7 +76,7 @@ export default function AboutUsPage() {
                     href="/#plans"
                     className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#E8502B] via-[#F05A36] to-emerald-600 px-6 py-3.5 text-xs sm:text-sm font-bold text-white shadow-lg shadow-orange-500/25 transition hover:brightness-110"
                   >
-                    <span>Explore Subscriptions (From ₹49)</span>
+                    <span>Explore Subscriptions (From ₹{oneDay.price})</span>
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                   <Link
@@ -310,7 +331,7 @@ export default function AboutUsPage() {
                 href="/#plans"
                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#E8502B] via-[#F05A36] to-emerald-600 px-7 py-4 text-xs sm:text-sm font-bold text-white shadow-xl transition hover:brightness-110"
               >
-                <span>Start One Day Trial @ ₹49</span>
+                <span>Start One Day Trial @ ₹{oneDay.price}</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link

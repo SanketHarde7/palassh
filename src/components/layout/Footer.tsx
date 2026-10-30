@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   MapPin,
@@ -10,8 +12,32 @@ import {
   ArrowUpRight,
   Leaf,
 } from "lucide-react";
+import {
+  INITIAL_PLANS,
+  SubscriptionPlan,
+  getActivePlansCatalog,
+} from "@/features/catalog/types";
 
 export function Footer() {
+  const [plans, setPlans] = useState<SubscriptionPlan[]>(INITIAL_PLANS);
+
+  useEffect(() => {
+    const sync = () => {
+      setPlans(getActivePlansCatalog());
+    };
+    sync();
+    window.addEventListener("palassh-plans-updated", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("palassh-plans-updated", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  const oneDay = plans.find((p) => p.id === "plan-daily") || plans[0] || INITIAL_PLANS[0];
+  const weekly = plans.find((p) => p.id === "plan-weekly") || plans[1] || INITIAL_PLANS[1];
+  const monthly = plans.find((p) => p.id === "plan-monthly") || plans[2] || INITIAL_PLANS[2];
+
   return (
     <footer className="relative bg-gradient-to-b from-[#071C15] via-[#091E16] to-[#04100C] text-stone-300 overflow-hidden">
       {/* Top Saffron + Emerald Glow Line */}
@@ -37,7 +63,7 @@ export function Footer() {
                 href="/#plans"
                 className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-4 text-xs sm:text-sm font-bold text-stone-900 shadow-lg transition hover:bg-amber-50"
               >
-                <span>Subscribe from ₹49/day</span>
+                <span>Subscribe from ₹{oneDay.price}/day</span>
                 <ArrowUpRight className="h-4 w-4 text-[#E8502B]" />
               </Link>
               <Link
@@ -113,7 +139,7 @@ export function Footer() {
                     className="hover:text-white transition flex items-center justify-between max-w-[230px]"
                   >
                     <span>One Day Puja Pack</span>
-                    <span className="text-xs font-bold text-amber-300">₹49/day</span>
+                    <span className="text-xs font-bold text-amber-300">₹{oneDay.price}/day</span>
                   </Link>
                 </li>
                 <li>
@@ -122,7 +148,7 @@ export function Footer() {
                     className="hover:text-white transition flex items-center justify-between max-w-[230px]"
                   >
                     <span>Weekly Devotion Pack</span>
-                    <span className="text-xs font-bold text-amber-300">₹329/wk</span>
+                    <span className="text-xs font-bold text-amber-300">₹{weekly.price}/wk</span>
                   </Link>
                 </li>
                 <li>
@@ -131,7 +157,7 @@ export function Footer() {
                     className="hover:text-white transition flex items-center justify-between max-w-[230px]"
                   >
                     <span>Monthly Sacred Pack</span>
-                    <span className="text-xs font-bold text-amber-300">₹1,350/mo</span>
+                    <span className="text-xs font-bold text-amber-300">₹{monthly.price.toLocaleString("en-IN")}/mo</span>
                   </Link>
                 </li>
                 <li className="pt-1">

@@ -38,39 +38,50 @@ export function MorningRitual() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
-  // Wheel interception: scroll horizontally through slides while over the section
+  // Wheel interception: scroll horizontally through slides while over the section with comfortable pacing
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
 
     let isThrottled = false;
+    let accumulatedDelta = 0;
+    let resetTimer: ReturnType<typeof setTimeout> | null = null;
 
     const handleWheel = (e: WheelEvent) => {
       const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
 
+      if (resetTimer) clearTimeout(resetTimer);
+      resetTimer = setTimeout(() => {
+        accumulatedDelta = 0;
+      }, 300);
+
       // Scroll Down / Next
-      if (delta > 20) {
+      if (delta > 0) {
         if (activeIdx < SLIDES.length - 1) {
           e.preventDefault();
-          if (!isThrottled) {
+          accumulatedDelta += delta;
+          if (!isThrottled && accumulatedDelta >= 80) {
             isThrottled = true;
+            accumulatedDelta = 0;
             setActiveIdx((prev) => Math.min(prev + 1, SLIDES.length - 1));
             setTimeout(() => {
               isThrottled = false;
-            }, 450);
+            }, 850);
           }
         }
         // If already at last slide, allow normal vertical scroll down the page
-      } else if (delta < -20) {
+      } else if (delta < 0) {
         // Scroll Up / Prev
         if (activeIdx > 0) {
           e.preventDefault();
-          if (!isThrottled) {
+          accumulatedDelta += delta;
+          if (!isThrottled && accumulatedDelta <= -80) {
             isThrottled = true;
+            accumulatedDelta = 0;
             setActiveIdx((prev) => Math.max(prev - 1, 0));
             setTimeout(() => {
               isThrottled = false;
-            }, 450);
+            }, 850);
           }
         }
         // If already at first slide, allow normal vertical scroll up the page
@@ -80,6 +91,7 @@ export function MorningRitual() {
     el.addEventListener("wheel", handleWheel, { passive: false });
     return () => {
       el.removeEventListener("wheel", handleWheel);
+      if (resetTimer) clearTimeout(resetTimer);
     };
   }, [activeIdx]);
 
@@ -160,7 +172,7 @@ export function MorningRitual() {
             className="flex will-change-transform"
             style={{
               transform: `translate3d(-${activeIdx * 100}%, 0, 0)`,
-              transition: "transform 500ms cubic-bezier(0.16, 1, 0.3, 1)",
+              transition: "transform 750ms cubic-bezier(0.22, 1, 0.36, 1)",
             }}
           >
             {SLIDES.map((s, i) => {
@@ -203,7 +215,7 @@ export function MorningRitual() {
 
             {/* Active connecting progress bar */}
             <div
-              className="absolute top-4 left-6 h-1 bg-gradient-to-r from-[#E8502B] via-amber-300 to-emerald-400 rounded-full transition-all duration-500 ease-out"
+              className="absolute top-4 left-6 h-1 bg-gradient-to-r from-[#E8502B] via-amber-300 to-emerald-400 rounded-full transition-all duration-750 ease-out"
               style={{
                 width: `calc(${(activeIdx / (SLIDES.length - 1)) * 100}% - 12px)`,
               }}

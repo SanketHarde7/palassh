@@ -146,8 +146,7 @@ export const INITIAL_PLANS: SubscriptionPlan[] = [
       "5:00 AM – 8:00 AM Silent Doorstep Drop",
     ],
     features: [
-      "Choose Predefined Mixed Box OR Tick Separate Flowers",
-      "5:00 AM – 8:00 AM Silent Doorstep Drop (No Bell Ringing)",
+      "6:00 AM – 8:00 AM Silent Doorstep Drop (No Bell Ringing)",
       "Zero Cold-Storage • Plucked at 1:30 AM from Farms",
       "Includes complimentary sacred Tulsi leaves",
     ],
@@ -179,7 +178,6 @@ export const INITIAL_PLANS: SubscriptionPlan[] = [
       "Unlock up to 2 KG Flower Booking on Festive Days",
     ],
     features: [
-      "Switch between Mixed or Separate Flowers any day via Checkboxes",
       "Exclusive Festive Access: Buy up to 2 KG combined flowers on festivals",
       "Modify next day's flower or Pause before 8:00 PM",
       "Paused days automatically carry forward",
@@ -215,7 +213,7 @@ export const INITIAL_PLANS: SubscriptionPlan[] = [
       "Full 30-Day Interactive Checkbox Schedule in My-Orders",
       "Priority Festive Quota: Buy up to 3 KG combined flowers on festivals",
       "Unlimited 1-Click Pause before 8 PM (Days carry forward)",
-      "Complimentary Lotus & Belpatra on Ekadashi & Sankashti",
+      "Complimentary Gifts on special Days ",
     ],
     festiveMaxGramsLimit: 3000,
   },
@@ -225,6 +223,37 @@ export const CATALOG_STORAGE_KEY = "palassh_flowers_catalog_v4";
 export const CART_STORAGE_KEY = "palassh_flower_cart_v3";
 export const FESTIVE_MODE_STORAGE_KEY = "palassh_festive_mode_v2";
 export const FESTIVE_DATES_STORAGE_KEY = "palassh_festive_dates_v1";
+export const PLANS_STORAGE_KEY = "palassh_plans_v2";
+
+export function getActivePlansCatalog(): SubscriptionPlan[] {
+  if (typeof window === "undefined") return INITIAL_PLANS;
+  try {
+    const saved = localStorage.getItem(PLANS_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch {
+    // Fallback to default catalog
+  }
+  return INITIAL_PLANS;
+}
+
+export function saveActivePlansCatalog(plans: SubscriptionPlan[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(PLANS_STORAGE_KEY, JSON.stringify(plans));
+    window.dispatchEvent(new Event("palassh-plans-updated"));
+    // Background sync to API if available
+    fetch("/api/admin/plans", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plans }),
+    }).catch(() => {});
+  } catch {
+    // Ignore storage error
+  }
+}
 
 export function getActiveFlowersCatalog(): FlowerProduct[] {
   if (typeof window === "undefined") return INITIAL_FLOWERS;
@@ -405,12 +434,18 @@ export function validateDirectFlowerPurchaseLimit(
     tier === "MONTHLY" ? 3000 : tier === "WEEKLY" ? 2000 : 500;
 
   if (projectedTotal > maxNormal) {
+    const plans = getActivePlansCatalog();
+    const weeklyPrice = plans.find((p) => p.id === "plan-weekly")?.price || 329;
+    const monthlyPrice = (
+      plans.find((p) => p.id === "plan-monthly")?.price || 1350
+    ).toLocaleString("en-IN");
+
     return {
       allowed: false,
       maxGrams: maxNormal,
       reason:
         maxNormal === 500
-          ? `Direct orders have a strict maximum limit of 500g combined (Other flowers in cart: ${currentCartGramsExcludingThisFlower}g). Subscribe to Weekly (₹329) or Monthly (₹1,350) for 2 KG – 3 KG limits!`
+          ? `Direct orders have a strict maximum limit of 500g combined (Other flowers in cart: ${currentCartGramsExcludingThisFlower}g). Subscribe to Weekly (₹${weeklyPrice}) or Monthly (₹${monthlyPrice}) for 2 KG – 3 KG limits!`
           : `Your ${tier} plan allows up to ${maxNormal}g combined per order.`,
     };
   }

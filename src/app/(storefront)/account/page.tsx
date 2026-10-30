@@ -14,6 +14,9 @@ import {
 } from "lucide-react";
 import {
   CustomerTier,
+  INITIAL_PLANS,
+  SubscriptionPlan,
+  getActivePlansCatalog,
   getCurrentCustomerTier,
   getFestiveModeStatus,
 } from "@/features/catalog/types";
@@ -28,6 +31,7 @@ export default function MyAccountPage() {
     pincode: "400607",
     dropPreference: "Hang pouch on main door handle (Do not ring bell)",
   });
+  const [plans, setPlans] = useState<SubscriptionPlan[]>(INITIAL_PLANS);
   const [tier, setTier] = useState<CustomerTier>("NORMAL");
   const [festive, setFestive] = useState({
     isFestiveDay: false,
@@ -36,8 +40,16 @@ export default function MyAccountPage() {
   const [savedToast, setSavedToast] = useState("");
 
   useEffect(() => {
-    setTier(getCurrentCustomerTier());
-    setFestive(getFestiveModeStatus());
+    const sync = () => {
+      setPlans(getActivePlansCatalog());
+      setTier(getCurrentCustomerTier());
+      setFestive(getFestiveModeStatus());
+    };
+    sync();
+
+    window.addEventListener("palassh-plans-updated", sync);
+    window.addEventListener("storage", sync);
+
     try {
       const savedProfile = localStorage.getItem("palassh_customer_profile_v1");
       if (savedProfile) {
@@ -46,6 +58,11 @@ export default function MyAccountPage() {
     } catch {
       // Ignore error
     }
+
+    return () => {
+      window.removeEventListener("palassh-plans-updated", sync);
+      window.removeEventListener("storage", sync);
+    };
   }, []);
 
   const handleSaveProfile = (e: React.FormEvent) => {
@@ -69,6 +86,10 @@ export default function MyAccountPage() {
   // Helper to simulate tier switching for testing Point #7 limits
   const switchDemoTier = (newTier: CustomerTier) => {
     setTier(newTier);
+    const oneDayPrice = plans.find((p) => p.id === "plan-daily")?.price || 49;
+    const weeklyPrice = plans.find((p) => p.id === "plan-weekly")?.price || 329;
+    const monthlyPrice = plans.find((p) => p.id === "plan-monthly")?.price || 1350;
+
     try {
       if (newTier === "NORMAL") {
         localStorage.removeItem("palassh_active_subscription");
@@ -79,7 +100,7 @@ export default function MyAccountPage() {
                 orderId: "PLS-901234",
                 planId: "plan-monthly",
                 planTitle: "Monthly Sacred Assortment",
-                pricePaid: 1350,
+                pricePaid: monthlyPrice,
                 billingCycle: "month",
                 totalDeliveries: 30,
                 remainingDeliveries: 28,
@@ -90,7 +111,7 @@ export default function MyAccountPage() {
                 orderId: "PLS-801234",
                 planId: "plan-weekly",
                 planTitle: "Weekly Devotion Pack",
-                pricePaid: 329,
+                pricePaid: weeklyPrice,
                 billingCycle: "week",
                 totalDeliveries: 7,
                 remainingDeliveries: 6,
@@ -100,7 +121,7 @@ export default function MyAccountPage() {
                 orderId: "PLS-701234",
                 planId: "plan-daily",
                 planTitle: "One Day Puja Pack",
-                pricePaid: 49,
+                pricePaid: oneDayPrice,
                 billingCycle: "day",
                 totalDeliveries: 1,
                 remainingDeliveries: 1,
@@ -173,11 +194,19 @@ export default function MyAccountPage() {
                   Your Flower Purchase Quota
                 </h2>
                 <p className="mt-1 text-xs text-emerald-100/80 leading-relaxed">
-                  {tier === "MONTHLY"
-                    ? "Monthly Member (₹1,350): You enjoy priority 3 KG (3,000g) combined flower booking on both Normal & Festive days."
-                    : tier === "WEEKLY"
-                    ? "Weekly Member (₹329): You enjoy up to 2 KG (2,000g) combined flower booking on both Normal & Festive days."
-                    : "Normal / One-Day User: Maximum 500g combined on normal days. Festive day direct flower orders require an active Weekly or Monthly subscription."}
+                  {(() => {
+                    const weeklyPrice = plans.find((p) => p.id === "plan-weekly")?.price || 329;
+                    const monthlyPrice = (
+                      plans.find((p) => p.id === "plan-monthly")?.price || 1350
+                    ).toLocaleString("en-IN");
+                    if (tier === "MONTHLY") {
+                      return `Monthly Member (₹${monthlyPrice}): You enjoy priority 3 KG (3,000g) combined flower booking on both Normal & Festive days.`;
+                    }
+                    if (tier === "WEEKLY") {
+                      return `Weekly Member (₹${weeklyPrice}): You enjoy up to 2 KG (2,000g) combined flower booking on both Normal & Festive days.`;
+                    }
+                    return "Normal / One-Day User: Maximum 500g combined on normal days. Festive day direct flower orders require an active Weekly or Monthly subscription.";
+                  })()}
                 </p>
               </div>
 

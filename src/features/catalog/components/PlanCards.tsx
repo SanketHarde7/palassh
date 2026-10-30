@@ -21,6 +21,7 @@ import {
   FlowerProduct,
   FlowerSelectionMode,
   getActiveFlowersCatalog,
+  getActivePlansCatalog,
 } from "../types";
 import { ScrollReveal } from "@/components/shared/ScrollReveal";
 
@@ -30,13 +31,31 @@ interface PlanCustomizationState {
 }
 
 export function PlanCards({
-  plans = INITIAL_PLANS,
+  plans: propPlans,
 }: {
   plans?: SubscriptionPlan[];
 }) {
+  const [plans, setPlans] = useState<SubscriptionPlan[]>(propPlans || INITIAL_PLANS);
   const [availableFlowers, setAvailableFlowers] = useState<FlowerProduct[]>([]);
   const [activeDetailPlan, setActiveDetailPlan] =
     useState<SubscriptionPlan | null>(null);
+
+  useEffect(() => {
+    if (propPlans && propPlans.length > 0) {
+      setPlans(propPlans);
+      return;
+    }
+    const syncPlans = () => {
+      setPlans(getActivePlansCatalog());
+    };
+    syncPlans();
+    window.addEventListener("palassh-plans-updated", syncPlans);
+    window.addEventListener("storage", syncPlans);
+    return () => {
+      window.removeEventListener("palassh-plans-updated", syncPlans);
+      window.removeEventListener("storage", syncPlans);
+    };
+  }, [propPlans]);
   const [customizations, setCustomizations] = useState<
     Record<string, PlanCustomizationState>
   >({

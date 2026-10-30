@@ -17,6 +17,9 @@ import {
 } from "lucide-react";
 import {
   CartItem,
+  INITIAL_PLANS,
+  SubscriptionPlan,
+  getActivePlansCatalog,
   getStoredCart,
   saveStoredCart,
   getCurrentCustomerTier,
@@ -28,12 +31,14 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [plans, setPlans] = useState<SubscriptionPlan[]>(INITIAL_PLANS);
   const [customerTier, setCustomerTier] = useState("NORMAL");
   const [festiveDay, setFestiveDay] = useState(false);
 
   useEffect(() => {
     const syncNavbarCart = () => {
       setCart(getStoredCart());
+      setPlans(getActivePlansCatalog());
       setCustomerTier(getCurrentCustomerTier());
       setFestiveDay(getFestiveModeStatus().isFestiveDay);
     };
@@ -46,11 +51,15 @@ export function Navbar() {
 
     window.addEventListener("palassh-cart-updated", syncNavbarCart);
     window.addEventListener("palassh-festive-updated", syncNavbarCart);
+    window.addEventListener("palassh-plans-updated", syncNavbarCart);
+    window.addEventListener("storage", syncNavbarCart);
     window.addEventListener("palassh-open-cart", handleOpenDrawer);
 
     return () => {
       window.removeEventListener("palassh-cart-updated", syncNavbarCart);
       window.removeEventListener("palassh-festive-updated", syncNavbarCart);
+      window.removeEventListener("palassh-plans-updated", syncNavbarCart);
+      window.removeEventListener("storage", syncNavbarCart);
       window.removeEventListener("palassh-open-cart", handleOpenDrawer);
     };
   }, []);
@@ -183,7 +192,14 @@ export function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="block rounded-xl px-3.5 py-2.5 text-sm font-semibold hover:bg-emerald-900/60"
               >
-                🌸 Subscriptions (₹49 / ₹329 / ₹1,350)
+                {(() => {
+                  const oneDayPrice = plans.find((p) => p.id === "plan-daily")?.price || 49;
+                  const weeklyPrice = plans.find((p) => p.id === "plan-weekly")?.price || 329;
+                  const monthlyPrice = (
+                    plans.find((p) => p.id === "plan-monthly")?.price || 1350
+                  ).toLocaleString("en-IN");
+                  return `🌸 Subscriptions (₹${oneDayPrice} / ₹${weeklyPrice} / ₹${monthlyPrice})`;
+                })()}
               </Link>
               <Link
                 href="/about"

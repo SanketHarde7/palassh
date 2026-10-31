@@ -57,7 +57,7 @@ export default function AboutUsPage() {
               <div className="lg:col-span-7 space-y-5">
                 <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-white/10 px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-amber-300 backdrop-blur-xs">
                   <Sparkles className="h-3.5 w-3.5 text-[#F05A36]" />
-                  <span>॥ जय जय रघुवीर समर्थ ॥ • Thane&apos;s Sacred Flower Concierge</span>
+                  <span>Thane&apos;s Sacred Flower Concierge</span>
                 </div>
 
                 <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold leading-[1.1]">

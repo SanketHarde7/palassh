@@ -76,7 +76,7 @@ export function getDynamicHeroBanners(plans: SubscriptionPlan[]): HeroSlideBanne
   return [
     {
       id: "slide-1",
-      badge: "॥ जय जय रघुवीर समर्थ ॥ • Thane 400601–400608",
+      badge: "100% Farm-Fresh • Thane 400601–400608",
       titleLine1: "Sacred Puja Blooms,",
       titleHighlight: "flowers that pray with you.",
       subtitle:
@@ -756,7 +756,7 @@ export default function HomePage() {
             <div key={copyIdx} className="flex items-center gap-10 shrink-0">
               <span className="flex items-center gap-2 text-amber-300">
                 <Sparkles className="h-3.5 w-3.5 text-[#F05A36]" />
-                ॥ जय जय रघुवीर समर्थ ॥
+                SACRED PUJA BLOOMS
               </span>
               <span>• DAILY FARM HARVEST</span>
               <span className="text-emerald-400">• 100% ZERO COLD STORAGE</span>

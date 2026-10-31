@@ -96,7 +96,7 @@ export function Navbar() {
             </span>
 
             <p className="mx-auto md:mx-0 font-serif text-xs sm:text-sm font-bold tracking-[0.16em] text-amber-300">
-              ॥ जय जय रघुवीर समर्थ ॥
+              {pathname === "/" ? "॥ जय जय रघुवीर समर्थ ॥" : "PALASSH • SACRED PUJA BLOOMS"}
             </p>
 
             <span className="hidden md:inline-flex items-center gap-1.5 text-emerald-200 font-medium">

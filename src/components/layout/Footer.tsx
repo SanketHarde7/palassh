@@ -49,7 +49,7 @@ export function Footer() {
           <div className="flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
             <div className="space-y-2 max-w-xl">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-black/25 px-3.5 py-1 text-[11px] font-bold uppercase tracking-widest text-amber-200">
-                <Sparkles className="h-3.5 w-3.5" /> ॥ जय जय रघुवीर समर्थ ॥
+                <Sparkles className="h-3.5 w-3.5" /> Thane&apos;s Sacred Flower Concierge
               </span>
               <h3 className="font-serif text-2xl sm:text-4xl font-bold text-white">
                 Bring Divine Fragrance to Your 6 AM Puja.
